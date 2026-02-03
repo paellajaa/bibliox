@@ -1,13 +1,22 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\BukuController;
+use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () { return view('welcome'); });
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
 
-// Route Guest (Hanya bisa diakses kalau belum login)
+// Halaman Utama
+Route::get('/', function () { 
+    return view('welcome'); 
+});
+
+// --- Rute GUEST (Hanya untuk yang BELUM Login) ---
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -15,23 +24,21 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
+// --- Rute AUTH (Harus Login) ---
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Route Admin (Contoh)
-// Rute khusus ADMIN
-Route::middleware(['auth', 'peran:admin'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-    Route::resource('buku', BukuController::class)->names('admin.buku');
+// --- Rute Khusus ADMIN ---
+Route::middleware(['auth', 'peran:admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Dashboard Admin
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Manajemen Buku (Index, Create, Store, Edit, Update, Destroy)
+    Route::resource('buku', BukuController::class);
 });
 
-Route::middleware(['auth', 'peran:admin'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-    Route::resource('buku', BukuController::class)->names('admin.buku');
-});
-
-// Rute khusus ANGGOTA
-Route::middleware(['auth', 'peran:anggota'])->prefix('anggota')->group(function () {
+// --- Rute Khusus ANGGOTA ---
+Route::middleware(['auth', 'peran:anggota'])->prefix('anggota')->name('anggota.')->group(function () {
     Route::get('/dashboard', function () {
         return "Halo Anggota! Selamat datang di Katalog BIBLIOX.";
-    })->name('anggota.dashboard');
+    })->name('dashboard');
 });

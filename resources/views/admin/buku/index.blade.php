@@ -11,6 +11,12 @@
     </a>
 </div>
 
+@if(session('success'))
+    <div class="mb-6 p-4 bg-cyan-500/10 border border-cyan-500/50 rounded-xl text-cyan-400 text-sm font-medium">
+        {{ session('success') }}
+    </div>
+@endif
+
 <div class="bg-[#1e293b] rounded-2xl border border-cyan-900/30 overflow-hidden shadow-2xl">
     <table class="w-full text-left">
         <thead class="bg-[#0f172a]/50 text-cyan-400 text-sm uppercase tracking-wider">
@@ -31,14 +37,25 @@
                 </td>
                 <td class="p-5">
                     <span class="bg-cyan-900/30 text-cyan-400 text-[10px] px-2 py-1 rounded-md border border-cyan-500/20">
-                        {{ $b->kategori }}
+                        {{ $b->kategori ?? 'Umum' }}
                     </span>
                 </td>
                 <td class="p-5 text-center text-sm italic">{{ $b->tahun_terbit }}</td>
                 <td class="p-5 text-center font-mono">{{ $b->stok }}</td>
-                <td class="p-5 text-right space-x-2">
-                    <button class="text-cyan-400 hover:text-cyan-300 transition">Edit</button>
-                    <button class="text-red-400 hover:text-red-300 transition">Hapus</button>
+                <td class="p-5 text-right">
+                    <div class="flex justify-end items-center gap-4">
+                        <a href="{{ route('admin.buku.edit', $b->kode_buku) }}" class="text-cyan-400 hover:text-cyan-300 transition text-sm font-bold">
+                            Edit
+                        </a>
+
+                        <form action="{{ route('admin.buku.destroy', $b->kode_buku) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus buku ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-red-400 hover:text-red-300 transition text-sm font-bold">
+                                Hapus
+                            </button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             @empty
