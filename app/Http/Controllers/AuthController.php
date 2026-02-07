@@ -10,103 +10,74 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /**
-     * Tampilan Login
-     */
-    public function showLogin() 
-    {
-        // Jika sudah login, langsung lempar ke dashboard masing-masing
-        if (Auth::check()) {
-            return $this->authenticatedRedirect();
-        }
+    public function showLogin() {
+        if (Auth::check()) return $this->authenticatedRedirect();
         return view('auth.login');
     }
 
-    /**
-     * Proses Login
-     */
-    public function login(Request $request) 
-    {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'kata_sandi' => ['required'],
-        ], [
-            'email.required' => 'Email wajib diisi.',
-            'kata_sandi.required' => 'Kata sandi tidak boleh kosong.',
+    public function login(Request $request) {
+        $request->validate([
+            'email' => 'required|email',
+            'kata_sandi' => 'required',
         ]);
 
-        // Laravel Auth secara default mencari field 'password'. 
-        // Kita hubungkan input 'kata_sandi' ke 'password'.
+        // Catatan: 'password' di sini adalah KEY sistem Laravel untuk mengecek password,
+        // Laravel akan otomatis mencocokkannya ke kolom 'kata_sandi' karena sudah disetting di Model.
         if (Auth::attempt(['email' => $request->email, 'password' => $request->kata_sandi], $request->remember)) {
-            
-            // WAJIB: Regenerasi session untuk mencegah serangan Session Fixation & Error 419
             $request->session()->regenerate();
-            
             return $this->authenticatedRedirect();
         }
 
-        // Jika gagal, kembali dengan pesan error
         throw ValidationException::withMessages([
-            'email' => ['Email atau kata sandi yang Anda masukkan salah.'],
+            'email' => ['Email atau kata sandi salah.'],
         ]);
     }
 
-    /**
-     * Tampilan Register
-     */
-    public function showRegister() 
-    {
-        return view('auth.register');
-    }
-
-    /**
-     * Proses Register
-     */
-    public function register(Request $request) 
-    {
+    public function register(Request $request) {
         $request->validate([
-            'nama' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:pengguna,email'],
-            'kata_sandi' => ['required', 'string', 'min:6', 'confirmed'],
-        ], [
-            'email.unique' => 'Email ini sudah terdaftar di BIBLIOX.',
-            'kata_sandi.min' => 'Kata sandi minimal 6 karakter.',
-            'kata_sandi.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
+            'nama' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:pengguna',
+            'kata_sandi' => 'required|min:8',
+            'kata_sandi_confirmation' => 'required|same:kata_sandi',
         ]);
 
-        User::create([
+        // Simpan ke tabel 'pengguna' dengan nama kolom yang benar
+        $user = User::create([
             'nama' => $request->nama,
             'email' => $request->email,
-            'peran' => 'anggota',
             'kata_sandi' => Hash::make($request->kata_sandi),
+            'peran' => 'anggota', 
         ]);
 
-        return redirect()->route('login')->with('success', 'Pendaftaran berhasil! Selamat bergabung di BIBLIOX.');
+        Auth::login($user);
+
+        $request->session()->regenerate();
+
+        return $this->authenticatedRedirect();
     }
 
-    /**
-     * Proses Logout
-     */
-    public function logout(Request $request) 
-    {
+    public function logout(Request $request) {
         Auth::logout();
-
-        // Bersihkan session secara total
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
         return redirect('/');
     }
 
-    /**
-     * Helper untuk Redirect berdasarkan Peran
-     */
-    protected function authenticatedRedirect()
-    {
+    protected function authenticatedRedirect() {
+        if (!Auth::check()) return redirect()->route('login');
+        
         $user = Auth::user();
+        
+        // Cek peran untuk mengarahkan ke dashboard yang benar
         if ($user->peran === 'admin') {
-            return redirect()->intended('/admin/dashboard');
+            return redirect()->route('admin.dashboard');
         }
-        return redirect()->intended('/anggota/dashboard');
+        
+        return redirect()->route('anggota.dashboard');
+    }
+
+    public function showRegister() {
+        if (Auth::check()) return $this->authenticatedRedirect();
+        return view('auth.register');
     }
 }

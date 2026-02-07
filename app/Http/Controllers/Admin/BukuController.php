@@ -28,23 +28,24 @@ class BukuController extends Controller
     /**
      * Menyimpan buku baru ke database
      */
-    public function store(Request $request)
-    {
-        // 1. Validasi Input
-        $validated = $request->validate([
-            'judul'        => 'required|string|max:255',
-            'penulis'      => 'required|string|max:255',
-            'kategori'     => 'nullable|string|max:100',
-            'stok'         => 'required|numeric|min:0',
-            'tahun_terbit' => 'required|digits:4',
-        ]);
+    public function store(Request $request) {
+    $request->validate([
+        'judul' => 'required',
+        'cover' => 'image|mimes:jpeg,png,jpg|max:2048', // Validasi foto
+    ]);
 
-        // 2. Simpan ke Database
-        Buku::create($validated);
+    $data = $request->all();
 
-        // 3. Redirect dengan pesan sukses
-        return redirect()->route('admin.buku.index')->with('success', 'Buku berhasil ditambahkan ke koleksi!');
+    if ($request->hasFile('cover')) {
+        $file = $request->file('cover');
+        $nama_file = time() . "_" . $file->getClientOriginalName();
+        $file->move(public_path('covers'), $nama_file); // Simpan ke folder public/covers
+        $data['cover'] = $nama_file;
     }
+
+    Buku::create($data);
+    return redirect()->route('admin.buku.index');
+}
 
     /**
      * Menampilkan form edit berdasarkan kode_buku
@@ -82,12 +83,18 @@ class BukuController extends Controller
     /**
      * Menghapus buku dari database
      */
-    public function destroy($kode_buku)
-    {
-        // Cari dan hapus
-        $buku = Buku::where('kode_buku', $kode_buku)->firstOrFail();
-        $buku->delete();
+   public function destroy($kode_buku)
+{
+    // 1. Cari bukunya
+    $buku = Buku::where('kode_buku', $kode_buku)->firstOrFail();
 
-        return redirect()->route('admin.buku.index')->with('success', 'Buku telah berhasil dihapus!');
-    }
+    // 2. (Opsional) Cek apakah sedang dipinjam? 
+    // Jika ada sistem denda, pastikan buku tidak sedang dalam status dipinjam
+    
+    // 3. Hapus buku
+    $buku->delete();
+
+    // 4. Kembali dengan pesan sukses
+    return redirect()->route('admin.buku.index')->with('success', 'Buku berhasil dihapus dari sistem!');
+}
 }
