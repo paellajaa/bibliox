@@ -5,10 +5,11 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\BukuController;
 use App\Models\Buku;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes - BIBLIOX DIGITAL LIBRARY (MODIFIED)
+| Web Routes - BIBLIOX DIGITAL LIBRARY
 |--------------------------------------------------------------------------
 */
 
@@ -28,19 +29,18 @@ Route::middleware('guest')->group(function () {
 // 3. LOGOUT
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// 4. ADMIN ROUTES (Midnight Style)
+// 4. ADMIN ROUTES
 Route::middleware(['auth', 'peran:admin'])->prefix('admin')->name('admin.')->group(function () {
     
-    // Dashboard Admin - Data Real
     Route::get('/dashboard', function () {
         return view('admin.dashboard', [
             'total_buku' => Buku::count(), 
             'total_anggota' => User::where('peran', 'anggota')->count(),
-            'peminjaman_aktif' => 0 // Sementara
+            'peminjaman_aktif' => 0 
         ]);
     })->name('dashboard');
 
-    // Manajemen Buku Manual
+    // Manajemen Buku
     Route::get('/buku', [BukuController::class, 'index'])->name('buku.index');          
     Route::get('/buku/tambah', [BukuController::class, 'create'])->name('buku.create');   
     Route::post('/buku/simpan', [BukuController::class, 'store'])->name('buku.store');    
@@ -49,15 +49,25 @@ Route::middleware(['auth', 'peran:admin'])->prefix('admin')->name('admin.')->gro
     Route::delete('/buku/hapus/{id}', [BukuController::class, 'destroy'])->name('buku.destroy'); 
 });
 
-// 5. ANGGOTA ROUTES (Member Area)
-Route::middleware(['auth', 'peran:anggota'])->prefix('anggota')->name('anggota.')->group(function () {
+// 5. ANGGOTA ROUTES
+// Note: Middleware disamakan menjadi 'peran' sesuai kolom database
+Route::middleware(['auth', 'peran:anggota'])->group(function () {
     
-    // Dashboard Anggota - Data Real
-    Route::get('/dashboard', function () {
+    Route::get('/anggota/dashboard', function () {
+        // Mengirimkan data buku asli ke view
+        $all_books = Buku::all(); 
+        
+        // Menghitung statistik sederhana untuk dashboard anggota
+        $total_katalog = Buku::count();
+        $buku_dipinjam = 0; // Nanti bisa dihitung dari tabel peminjaman
+
         return view('anggota.dashboard', [
-            'buku_dipinjam' => 0, 
-            'total_katalog' => Buku::count(),
-            'all_books' => Buku::latest()->get() 
+            'all_books' => $all_books,
+            'total_katalog' => $total_katalog,
+            'buku_dipinjam' => $buku_dipinjam
         ]);
-    })->name('dashboard');
+    })->name('anggota.dashboard');
+
+    // Route Proses Pinjam
+    Route::post('/pinjam/{id}', [BukuController::class, 'pinjam'])->name('buku.pinjam');
 });

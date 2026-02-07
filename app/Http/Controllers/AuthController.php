@@ -63,18 +63,15 @@ class AuthController extends Controller
         return redirect('/');
     }
 
-    protected function authenticatedRedirect() {
-        if (!Auth::check()) return redirect()->route('login');
-        
-        $user = Auth::user();
-        
-        // Cek peran untuk mengarahkan ke dashboard yang benar
-        if ($user->peran === 'admin') {
-            return redirect()->route('admin.dashboard');
-        }
-        
-        return redirect()->route('anggota.dashboard');
+protected function authenticatedRedirect() {
+    if (!Auth::check()) return redirect()->route('login');
+
+    $user = Auth::user();
+    if ($user->peran === 'admin') {
+        return redirect()->route('admin.dashboard');
     }
+    return redirect()->route('anggota.dashboard');
+}
 
     public function showRegister() {
         if (Auth::check()) return $this->authenticatedRedirect();

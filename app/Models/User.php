@@ -6,14 +6,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+// app/Models/User.php
+
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    // 1. Paksa Laravel pakai tabel 'pengguna' (sesuai database kamu)
     protected $table = 'pengguna';
+    
+    // TAMBAHKAN BARIS INI
+    protected $primaryKey = 'pengenal'; 
 
-    // 2. Sesuaikan nama kolom dengan yang ada di phpMyAdmin kamu
     protected $fillable = [
         'nama',
         'email',
