@@ -3,58 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIBLIOX Admin - Modern Library</title>
+    <title>BIBLIOX - Modern Library System</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            scroll-behavior: smooth;
+        }
+        /* Custom scrollbar biar lebih clean */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        [x-cloak] { display: none !important; }
+    </style>
 </head>
-<body class="bg-[#F8FAFC] text-slate-800">
+<body class="bg-[#F8FAFC] text-slate-800 antialiased">
+
     <div class="flex min-h-screen">
-        <aside class="w-72 bg-white border-r border-slate-200 flex flex-col fixed h-full z-20 shadow-sm">
+        <aside class="w-72 bg-white border-r border-slate-100 flex flex-col fixed h-full z-20 shadow-sm">
             <div class="p-8">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30">
-                        <span class="text-white font-black text-xl italic">X</span>
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 bg-cyan-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-cyan-200 font-bold text-xl">
+                        B
                     </div>
-                    <div>
-                        <h1 class="text-xl font-extrabold tracking-tighter text-slate-900 uppercase">BIBLIO<span class="text-blue-600">X</span></h1>
-                        <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Administrator</p>
-                    </div>
+                    <h1 class="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">
+                        BIBLIO<span class="text-cyan-600">X</span>
+                    </h1>
                 </div>
+                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold ml-1">
+                    {{ Auth::user()->peran === 'admin' ? 'Pustakawan System' : 'Member Library' }}
+                </p>
             </div>
-            
-            <nav class="flex-1 px-4 space-y-1 mt-4">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-4 px-6 py-4 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-50 text-blue-600 rounded-2xl font-bold' : 'text-slate-500 hover:bg-slate-50 rounded-2xl transition' }}">
-                    <span class="text-xl">📊</span> Dashboard
+
+            <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2 px-6">Utama</p>
+                
+                <a href="{{ Auth::user()->peran === 'admin' ? route('admin.dashboard') : route('anggota.dashboard') }}" 
+                   class="flex items-center gap-4 px-6 py-4 {{ Request::is('admin/dashboard') || Request::is('anggota/dashboard') ? 'bg-cyan-50 text-cyan-600 font-black' : 'text-slate-500 hover:bg-slate-50' }} rounded-2xl font-bold transition-all duration-300">
+                    <span class="text-xl">📊</span> Ringkasan
                 </a>
-                <a href="{{ route('admin.buku.index') }}" class="flex items-center gap-4 px-6 py-4 {{ request()->routeIs('admin.buku.*') ? 'bg-blue-50 text-blue-600 rounded-2xl font-bold' : 'text-slate-500 hover:bg-slate-50 rounded-2xl transition' }}">
-                    <span class="text-xl">📚</span> Kelola Buku
-                </a>
-                <a href="#" class="flex items-center gap-4 px-6 py-4 text-slate-500 hover:bg-slate-50 rounded-2xl transition">
-                    <span class="text-xl">👥</span> Anggota
+
+                @if(Auth::user()->peran === 'anggota')
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-6 mb-2 px-6">Layanan Siswa</p>
+                    <a href="{{ route('anggota.dashboard') }}" class="flex items-center gap-4 px-6 py-4 {{ Request::is('anggota/dashboard') ? 'text-cyan-600 font-black' : 'text-slate-500 hover:bg-slate-50' }} rounded-2xl font-bold transition-all duration-300">
+                        <span class="text-xl">🔍</span> Cari Buku
+                    </a>
+                    <a href="{{ route('anggota.buku-saya') }}" class="flex items-center gap-4 px-6 py-4 {{ Request::is('anggota/buku-saya') ? 'bg-cyan-50 text-cyan-600 font-black' : 'text-slate-500 hover:bg-slate-50' }} rounded-2xl font-bold transition-all duration-300">
+                        <span class="text-xl">📖</span> Buku Saya
+                    </a>
+                @endif
+
+                @if(Auth::user()->peran === 'admin')
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-6 mb-2 px-6">Manajemen</p>
+                    
+                    <a href="{{ route('admin.peminjaman.index') }}" 
+                       class="flex items-center gap-4 px-6 py-4 {{ Request::is('admin/verifikasi*') ? 'bg-cyan-50 text-cyan-600 font-black' : 'text-slate-500 hover:bg-slate-50' }} rounded-2xl font-bold transition-all duration-300 relative">
+                        <span class="text-xl">📥</span> 
+                        <span class="flex-1">Verifikasi Pinjam</span>
+                        
+                        @php
+                            $pendingCount = \App\Models\Peminjaman::where('status', 'menunggu')->count();
+                        @endphp
+                        @if($pendingCount > 0)
+                            <span class="bg-red-500 text-white text-[9px] px-2 py-1 rounded-full animate-pulse">
+                                {{ $pendingCount }}
+                            </span>
+                        @endif
+                    </a>
+
+                    <a href="{{ route('admin.buku.index') }}" 
+                       class="flex items-center gap-4 px-6 py-4 {{ Request::is('admin/buku*') ? 'bg-cyan-50 text-cyan-600 font-black' : 'text-slate-500 hover:bg-slate-50' }} rounded-2xl font-bold transition-all duration-300">
+                        <span class="text-xl">📚</span> Kelola Buku
+                    </a>
+
+                    <a href="{{ route('admin.users.index') }}" 
+                       class="flex items-center gap-4 px-6 py-4 {{ Request::is('admin/users*') ? 'bg-cyan-50 text-cyan-600 font-black' : 'text-slate-500 hover:bg-slate-50' }} rounded-2xl font-bold transition-all duration-300">
+                        <span class="text-xl">👥</span> Kelola User
+                    </a>
+                @endif
+
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-6 mb-2 px-6">Akun</p>
+                <a href="#" class="flex items-center gap-4 px-6 py-4 text-slate-500 hover:bg-slate-50 rounded-2xl font-bold transition-all duration-300">
+                    <span class="text-xl">👤</span> Profil
                 </a>
             </nav>
 
-            <div class="p-6 border-t border-slate-100">
+            <div class="p-6 border-t border-slate-50">
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button class="w-full flex items-center gap-3 px-6 py-3 text-slate-400 hover:text-red-600 transition font-bold text-sm">
-                        <span>🚪</span> KELUAR SISTEM
+                    <button type="submit" class="group w-full flex items-center gap-4 px-6 py-4 text-slate-400 hover:bg-red-50 hover:text-red-600 rounded-2xl font-bold transition-all duration-300">
+                        <span class="text-xl group-hover:scale-110 transition-transform">🚪</span> 
+                        <span class="text-sm">LOG OUT</span>
                     </button>
                 </form>
             </div>
         </aside>
 
-        <div class="flex-1 ml-72">
-            <header class="h-20 flex items-center justify-between px-10 bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-slate-100">
-                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Dashboard Pengelola</h2>
-                <div class="flex items-center gap-4">
-                    <div class="text-right mr-2">
-                        <p class="text-xs font-bold text-slate-900">{{ auth()->user()->nama }}</p>
-                        <p class="text-[10px] text-blue-600 font-bold uppercase">Admin Utama</p>
+        <div class="flex-1 ml-72 flex flex-col">
+            <header class="h-20 flex items-center justify-between px-10 bg-white sticky top-0 z-10 border-b border-slate-100 shadow-sm">
+                <div>
+                    <span class="px-5 py-2 bg-slate-900 rounded-2xl text-[10px] font-black text-white uppercase tracking-[0.2em] shadow-lg shadow-slate-200">
+                        {{ Auth::user()->peran === 'admin' ? 'Pusat Kendali Admin' : 'Area Siswa BiblioX' }}
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-6">
+                    <div class="relative cursor-pointer text-slate-400 hover:text-cyan-600 transition-colors">
+                        <span class="text-xl">🔔</span>
+                        <div class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>
                     </div>
-                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center border-2 border-white shadow-sm">
-                        <span class="text-blue-600 font-bold text-xs">AD</span>
+
+                    <div class="flex items-center gap-4 pl-6 border-l border-slate-100">
+                        <div class="text-right hidden md:block">
+                            <p class="text-sm font-black text-slate-900 leading-none mb-1">{{ Auth::user()->nama }}</p>
+                            <span class="px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[9px] font-black uppercase rounded-md tracking-tighter">
+                                {{ Auth::user()->peran }}
+                            </span>
+                        </div>
+                        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md shadow-cyan-100 font-bold text-lg">
+                            {{ substr(Auth::user()->nama, 0, 1) }}
+                        </div>
                     </div>
                 </div>
             </header>
@@ -64,5 +133,6 @@
             </main>
         </div>
     </div>
+
 </body>
 </html>

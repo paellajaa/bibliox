@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Buku;
-use App\Models\Peminjaman; 
+use App\Models\Peminjaman; // <--- PASTIKAN BARIS INI ADA
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
+
+// ... sisa kode lainnya
 
 class BukuController extends Controller
 {
@@ -31,31 +33,34 @@ class BukuController extends Controller
     /**
      * Menyimpan buku baru ke database
      */
-    public function store(Request $request) 
-    {
-        $request->validate([
-            'judul'   => 'required|string|max:255',
-            'penulis' => 'required|string|max:255',
-            'stok'    => 'required|numeric|min:0',
-            'cover'   => 'required|image|mimes:jpeg,png,jpg,webp|max:2048', 
-        ]);
+  public function store(Request $request) 
+{
+    $request->validate([
+        'judul'   => 'required|string|max:255',
+        'penulis' => 'required|string|max:255',
+        'stok'    => 'required|numeric|min:0',
+        'cover'   => 'required|image|mimes:jpeg,png,jpg,webp|max:2048', 
+    ]);
 
-        $data = $request->all();
+    // Mengambil semua data input kecuali cover
+    $data = $request->except('cover');
 
-        if ($request->hasFile('cover')) {
-            $file = $request->file('cover');
-            // Membuat nama file unik berdasarkan waktu
-            $nama_file = time() . "_" . str_replace(' ', '_', $file->getClientOriginalName());
-            
-            // Pindahkan file ke folder public/covers
-            $file->move(public_path('covers'), $nama_file); 
-            $data['cover'] = $nama_file;
-        }
-
-        Buku::create($data);
-
-        return redirect()->route('admin.buku.index')->with('success', 'Buku baru berhasil ditambahkan ke rak!');
+    if ($request->hasFile('cover')) {
+        $file = $request->file('cover');
+        $nama_file = time() . "_" . str_replace(' ', '_', $file->getClientOriginalName());
+        
+        // Pindahkan file ke public/covers
+        $file->move(public_path('covers'), $nama_file); 
+        
+        // Masukkan nama file ke dalam array $data
+        $data['cover'] = $nama_file;
     }
+
+    // Sekarang kolom 'cover' sudah bisa disimpan karena sudah ada di fillable Model
+    Buku::create($data);
+
+    return redirect()->route('admin.buku.index')->with('success', 'Buku baru berhasil ditambahkan!');
+}
 
     /**
      * Menampilkan form edit
@@ -119,29 +124,36 @@ class BukuController extends Controller
     /**
      * FUNGSI PINJAM BUKU (KHUSUS ANGGOTA/SISWA)
      */
-    public function pinjam($id)
-    {
-        // Cari buku berdasarkan kode_buku
-        $buku = Buku::where('kode_buku', $id)->firstOrFail();
+public function pinjam(Request $request, $id)
+{
+    // Cari buku berdasarkan kode_buku
+    $buku = Buku::where('kode_buku', $id)->firstOrFail();
 
-        // Validasi Stok
-        if ($buku->stok <= 0) {
-            return back()->with('error', 'Maaf, stok buku ini sudah habis dipinjam!');
-        }
-
-        // Simpan data peminjaman ke tabel
-        Peminjaman::create([
-            'user_id'             => Auth::user()->pengenal, // Menggunakan Primary Key 'pengenal' di tabel pengguna
-            'buku_id'             => $buku->kode_buku,
-            'tanggal_pinjam'      => now(),
-            'durasi_hari'         => 7, // Pinjam standar 7 hari
-            'tanggal_jatuh_tempo' => now()->addDays(7),
-            'status'              => 'dipinjam'
-        ]);
-
-        // Kurangi stok buku secara otomatis
-        $buku->decrement('stok');
-
-        return redirect()->route('anggota.dashboard')->with('success', 'Sukses! Buku "' . $buku->judul . '" berhasil dipinjam. Silakan ambil di pustakawan.');
+    // 1. Cek stok
+    if ($buku->stok <= 0) {
+        return back()->with('error', 'Maaf, stok buku ini sedang habis!');
     }
+
+    // 2. Validasi & Konversi Durasi ke Angka (Integer)
+    $request->validate([
+        'durasi' => 'required|integer|min:1|max:14',
+    ]);
+
+    $durasi = (int) $request->durasi; // Paksa jadi angka biar Carbon gak error
+
+    // 3. Simpan data peminjaman ke tabel
+    Peminjaman::create([
+        'user_id'             => Auth::user()->pengenal, 
+        'buku_id'             => $buku->kode_buku,
+        'tanggal_pinjam'      => now(),
+        'durasi_hari'         => $durasi,
+        'tanggal_jatuh_tempo' => now()->addDays($durasi), // Sekarang aman karena sudah jadi int
+        'status'              => 'menunggu'
+    ]);
+
+    // 4. Kurangi stok buku secara otomatis
+    $buku->decrement('stok');
+
+    return redirect()->route('anggota.dashboard')->with('success', 'Permintaan terkirim! Silakan tunggu verifikasi admin.');
+}
 }

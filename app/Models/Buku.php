@@ -10,13 +10,14 @@ class Buku extends Model
     use HasFactory;
 
     protected $table = 'buku';
-    protected $primaryKey = 'kode_buku'; // Sesuaikan dengan migrasi kamu
+    protected $primaryKey = 'kode_buku'; 
 
-        protected $fillable = [
+    protected $fillable = [
         'judul', 
         'penulis', 
         'kategori', 
         'stok', 
-        'tahun_terbit'
+        'tahun_terbit',
+        'cover' // <-- TAMBAHKAN INI AGAR DATA FOTO BISA MASUK
     ];
 }
