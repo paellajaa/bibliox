@@ -21,7 +21,7 @@ class PenggunaSeeder extends Seeder
             'kata_sandi' => Hash::make('admin123'),
         ]);
 
-        // 2. Buat Akun Anggota Contoh (Untuk Testing)
+        // 2. Buat Akun Anggota Contoh Dummy
         User::create([
             'nama' => 'Budi Santoso',
             'email' => 'budi@gmail.com',
