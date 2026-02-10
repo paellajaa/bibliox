@@ -17,6 +17,7 @@
     @endif
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {{-- Pastikan variabel di controller adalah compact('peminjaman') --}}
         @forelse($peminjaman as $p)
         <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col gap-4 relative overflow-hidden group hover:border-cyan-500 transition-all duration-300">
             
@@ -32,11 +33,11 @@
 
             <div class="flex gap-5 items-start pt-4">
                 <div class="w-24 h-32 bg-slate-100 rounded-2xl overflow-hidden flex-shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-500">
-                    <img src="{{ asset('covers/' . $p->buku->cover) }}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x300?text=No+Cover'">
+                    <img src="{{ asset('covers/' . ($p->buku->cover ?? '')) }}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x300?text=No+Cover'">
                 </div>
                 <div class="flex-1">
-                    <h4 class="font-black text-slate-900 leading-tight uppercase text-sm mb-1 truncate w-40">{{ $p->buku->judul }}</h4>
-                    <p class="text-[10px] text-slate-400 font-bold mb-4 italic">Oleh: {{ $p->buku->penulis }}</p>
+                    <h4 class="font-black text-slate-900 leading-tight uppercase text-sm mb-1 truncate w-40">{{ $p->buku->judul ?? 'Buku Dihapus' }}</h4>
+                    <p class="text-[10px] text-slate-400 font-bold mb-4 italic">Oleh: {{ $p->buku->penulis ?? '-' }}</p>
                     
                     @if($p->status == 'dipinjam')
                         <div class="bg-emerald-50 p-3 rounded-2xl border border-emerald-100">
@@ -44,8 +45,7 @@
                             <p class="text-xs font-black text-emerald-700">{{ \Carbon\Carbon::parse($p->tanggal_jatuh_tempo)->translatedFormat('d F Y') }}</p>
                         </div>
                         <button @click="openReturn = true; pinjamId = '{{ $p->id }}'; bukuJudul = '{{ $p->buku->judul }}'" 
-                                style="background-color: #0f172a !important; color: white !important;"
-                                class="w-full mt-4 py-3 rounded-2xl font-black text-[9px] uppercase tracking-widest hover:opacity-90 transition-all">
+                                class="w-full mt-4 py-3 bg-slate-900 text-white rounded-2xl font-black text-[9px] uppercase tracking-widest hover:bg-cyan-600 transition-all">
                             Kembalikan Buku
                         </button>
 
@@ -59,26 +59,25 @@
                                     Catatan: "{{ $p->catatan_admin ?? 'Buku rusak/hilang' }}"
                                 </p>
                                 <button @click="alert('Silakan bayar tunai ke Pustakawan untuk menyelesaikan urusan ini.')" 
-                                        style="background-color: #dc2626 !important; color: white !important; display: block !important;"
-                                        class="w-full py-2.5 rounded-xl font-black text-[8px] uppercase tracking-widest shadow-lg shadow-red-100 hover:opacity-90 transition-all">
+                                        class="w-full py-2.5 bg-red-600 text-white rounded-xl font-black text-[8px] uppercase tracking-widest shadow-lg shadow-red-100 hover:opacity-90 transition-all">
                                     Cara Bayar
                                 </button>
                             </div>
                         </div>
 
                     @elseif($p->status == 'menunggu')
-                        <div class="bg-orange-50 p-4 rounded-2xl border border-orange-100 italic">
-                            <p class="text-[10px] text-orange-600 font-bold leading-relaxed">Menunggu persetujuan...</p>
+                        <div class="bg-orange-50 p-4 rounded-2xl border border-orange-100 italic text-center">
+                            <p class="text-[10px] text-orange-600 font-bold leading-relaxed">Menunggu persetujuan admin...</p>
                         </div>
 
                     @elseif($p->status == 'proses_kembali')
                         <div class="bg-cyan-50 p-4 rounded-2xl border border-cyan-100 italic text-center">
-                            <p class="text-[10px] text-cyan-600 font-bold leading-relaxed">Sedang diperiksa...</p>
+                            <p class="text-[10px] text-cyan-600 font-bold leading-relaxed">Sedang diperiksa admin...</p>
                         </div>
 
                     @elseif($p->status == 'kembali')
                         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center">
-                            <p class="text-[10px] text-slate-400 font-black uppercase italic tracking-widest">Selesai</p>
+                            <p class="text-[10px] text-slate-400 font-black uppercase italic tracking-widest">Selesai Dikembalikan</p>
                         </div>
                     @endif
                 </div>
@@ -92,6 +91,7 @@
         @endforelse
     </div>
 
+    {{-- MODAL KEMBALI --}}
     <div x-show="openReturn" 
          class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" 
          x-transition.opacity x-cloak>
@@ -107,7 +107,8 @@
                 <p class="text-slate-400 text-sm font-bold mt-2" x-text="bukuJudul"></p>
             </div>
             
-            <form :action="'/buku-saya/ajukan-kembali/' + pinjamId" method="POST">
+            {{-- PERBAIKAN URL: Harus /anggota/ agar sesuai dengan prefix di web.php --}}
+            <form :action="'/anggota/buku-saya/ajukan-kembali/' + pinjamId" method="POST">
                 @csrf
                 <div class="mb-8">
                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Laporkan kondisi buku saat ini:</label>
@@ -122,8 +123,7 @@
                         Batal
                     </button>
                     <button type="submit" 
-                            style="background-color: #f97316 !important; color: white !important;"
-                            class="flex-1 py-5 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-orange-100 hover:opacity-90 transition-all flex items-center justify-center text-center">
+                            class="flex-1 py-5 bg-orange-500 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-orange-600 transition-all">
                         Kirim Laporan
                     </button>
                 </div>

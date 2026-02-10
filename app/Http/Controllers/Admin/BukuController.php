@@ -11,17 +11,26 @@ use Illuminate\Support\Facades\File;
 
 class BukuController extends Controller
 {
+    /**
+     * Menampilkan daftar semua buku untuk Admin
+     */
     public function index()
     {
         $semua_buku = Buku::all();
         return view('admin.buku.index', compact('semua_buku'));
     }
 
+    /**
+     * Menampilkan form tambah buku
+     */
     public function create()
     {
         return view('admin.buku.create');
     }
 
+    /**
+     * Menyimpan buku baru ke database
+     */
     public function store(Request $request) 
     {
         $request->validate([
@@ -36,21 +45,32 @@ class BukuController extends Controller
         if ($request->hasFile('cover')) {
             $file = $request->file('cover');
             $nama_file = time() . "_" . str_replace(' ', '_', $file->getClientOriginalName());
+            
+            // Pindahkan file ke public/covers
             $file->move(public_path('covers'), $nama_file); 
+            
+            // Masukkan nama file ke dalam array $data
             $data['cover'] = $nama_file;
         }
 
         Buku::create($data);
+
         return redirect()->route('admin.buku.index')->with('success', 'Buku baru berhasil ditambahkan!');
     }
 
+    /**
+     * Menampilkan form edit
+     */
     public function edit($id)
     {
-        // Sesuaikan dengan Primary Key model Buku (kode_buku)
+        // Mencari berdasarkan Primary Key 'kode_buku'
         $buku = Buku::where('kode_buku', $id)->firstOrFail();
         return view('admin.buku.edit', compact('buku'));
     }
 
+    /**
+     * Memperbarui data buku
+     */
     public function update(Request $request, $id)
     {
         $buku = Buku::where('kode_buku', $id)->firstOrFail();
@@ -63,6 +83,7 @@ class BukuController extends Controller
         ]);
 
         if ($request->hasFile('cover')) {
+            // Hapus file cover lama jika ada
             if ($buku->cover && File::exists(public_path('covers/' . $buku->cover))) {
                 File::delete(public_path('covers/' . $buku->cover));
             }
@@ -74,13 +95,18 @@ class BukuController extends Controller
         }
 
         $buku->update($validated);
+
         return redirect()->route('admin.buku.index')->with('success', 'Informasi buku berhasil diperbarui!');
     }
 
+    /**
+     * Menghapus buku
+     */
     public function destroy($id)
     {
         $buku = Buku::where('kode_buku', $id)->firstOrFail();
         
+        // Hapus file fisik cover
         if ($buku->cover && File::exists(public_path('covers/' . $buku->cover))) {
             File::delete(public_path('covers/' . $buku->cover));
         }
@@ -90,36 +116,38 @@ class BukuController extends Controller
     }
 
     /**
-     * FUNGSI PINJAM BUKU (KHUSUS ANGGOTA)
+     * FUNGSI PINJAM BUKU (KHUSUS ANGGOTA/SISWA)
      */
     public function pinjam(Request $request, $id)
     {
-        // Pastikan $id yang dikirim dari form adalah kode_buku
+        // Cari pakai kode_buku (karena di database Abang pakai String kode_buku)
         $buku = Buku::where('kode_buku', $id)->firstOrFail();
 
+        // 1. Cek stok
         if ($buku->stok <= 0) {
             return back()->with('error', 'Maaf, stok buku ini sedang habis!');
         }
 
+        // 2. Validasi Durasi
         $request->validate([
             'durasi' => 'required|integer|min:1|max:14',
         ]);
 
-        $durasi = (int) $request->durasi;
+        $durasi = (int) $request->durasi; 
 
-        // Simpan data peminjaman
+        // 3. Simpan data peminjaman
         Peminjaman::create([
-            'user_id'             => Auth::id(), // Pakai ID primary key user (lebih aman)
-            'buku_id'             => $buku->kode_buku,
+            'user_id'             => Auth::user()->pengenal, // ID User menggunakan pengenal (String)
+            'buku_id'             => $buku->kode_buku,       // ID Buku menggunakan kode_buku (String)
             'tanggal_pinjam'      => now(),
             'durasi_hari'         => $durasi,
             'tanggal_jatuh_tempo' => now()->addDays($durasi),
             'status'              => 'menunggu'
         ]);
 
-        // Kurangi stok
+        // 4. Kurangi stok buku
         $buku->decrement('stok');
 
-        return redirect()->route('anggota.dashboard')->with('success', 'Permintaan terkirim! Silakan tunggu verifikasi admin.');
+        return redirect()->route('anggota.dashboard')->with('success', 'Permintaan pinjam berhasil dikirim! Silakan tunggu verifikasi admin.');
     }
 }

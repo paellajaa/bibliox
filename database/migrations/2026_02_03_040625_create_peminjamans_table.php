@@ -5,27 +5,23 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up(): void {
-        // MATIKAN PENGECEKAN FOREIGN KEY SEMENTARA
-        Schema::disableForeignKeyConstraints();
-
-        Schema::create('peminjaman', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('buku_id'); 
-            $table->date('tanggal_pinjam')->nullable(); 
-            $table->integer('durasi_hari'); 
-            $table->date('tanggal_jatuh_tempo')->nullable();
-            $table->date('tanggal_kembali')->nullable();
-            $table->string('status')->default('menunggu');
-            $table->integer('total_denda')->default(0);
-            $table->string('status_denda')->default('lunas'); 
-            $table->string('judul_pengganti')->nullable(); 
-            $table->timestamps();
-        });
-
-        Schema::enableForeignKeyConstraints();
-    }
+    public function up(): void
+{
+    Schema::create('peminjaman', function (Blueprint $col) {
+        $col->id();
+        // UBAH DUA BARIS INI MENJADI STRING
+        $col->string('user_id'); 
+        $col->string('buku_id'); 
+        
+        $col->dateTime('tanggal_pinjam');
+        $col->integer('durasi_hari');
+        $col->dateTime('tanggal_jatuh_tempo');
+        $col->dateTime('tanggal_kembali')->nullable();
+        $col->enum('status', ['menunggu', 'dipinjam', 'kembali', 'ditolak'])->default('menunggu');
+        $col->integer('denda')->default(0);
+        $col->timestamps();
+    });
+}
 
     public function down(): void {
         Schema::dropIfExists('peminjaman');

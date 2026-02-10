@@ -15,7 +15,7 @@ class PeminjamanController extends Controller
      */
     public function index()
     {
-        // Menampilkan yang statusnya menunggu, proses_kembali, sedang dipinjam, atau rusak (ada denda)
+        // Mengambil data yang butuh tindakan Admin
         $permintaan = Peminjaman::with(['user', 'buku'])
             ->whereIn('status', ['menunggu', 'proses_kembali', 'dipinjam', 'rusak'])
             ->latest()
@@ -117,9 +117,10 @@ class PeminjamanController extends Controller
     {
         $pinjam = Peminjaman::findOrFail($id);
 
-        // Update status ke 'kembali' (Lunas)
+        // Update status ke 'kembali' dan reset denda jadi 0 (karena sudah bayar)
         $pinjam->update([
             'status' => 'kembali',
+            'total_denda' => 0,
             'catatan_admin' => $pinjam->catatan_admin . ' | LUNAS PADA ' . now()->format('d/m/Y H:i')
         ]);
 
@@ -131,6 +132,7 @@ class PeminjamanController extends Controller
      */
     public function bukuSaya()
     {
+        // Variabel harus $peminjaman agar cocok dengan @forelse($peminjaman as $p)
         $peminjaman = Peminjaman::with('buku')
             ->where('user_id', Auth::user()->pengenal)
             ->latest()

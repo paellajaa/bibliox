@@ -38,7 +38,7 @@ Route::middleware(['auth'])->group(function () {
         // Dashboard Admin
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        // Manajemen Buku (Gunakan Manual Agar Nama Rute Sesuai dengan Controller Abang)
+        // Manajemen Buku
         Route::get('/buku', [BukuController::class, 'index'])->name('buku.index');           
         Route::get('/buku/tambah', [BukuController::class, 'create'])->name('buku.create');   
         Route::post('/buku/simpan', [BukuController::class, 'store'])->name('buku.store');    
@@ -64,12 +64,13 @@ Route::middleware(['auth'])->group(function () {
         // Dashboard Anggota
         Route::get('/dashboard', [DashboardController::class, 'anggota'])->name('dashboard');
 
-        // Proses Pinjam Buku
-        // Nama rute: anggota.buku.pinjam
+        // Proses Pinjam Buku (URL: /anggota/pinjam/{id})
         Route::post('/pinjam/{id}', [BukuController::class, 'pinjam'])->name('buku.pinjam');
         
-        // Buku Saya & Ajukan Kembali
+        // Buku Saya
         Route::get('/buku-saya', [PeminjamanController::class, 'bukuSaya'])->name('buku-saya');
+        
+        // PROSES KEMBALIKAN BUKU (URL: /anggota/buku-saya/ajukan-kembali/{id})
         Route::post('/buku-saya/ajukan-kembali/{id}', [PeminjamanController::class, 'ajukanPengembalian'])->name('peminjaman.ajukan-kembali');
     });
 
