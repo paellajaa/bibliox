@@ -34,15 +34,11 @@ Route::middleware(['auth'])->group(function () {
 
     // --- KHUSUS ADMIN ---
     Route::middleware(['peran:admin'])->prefix('admin')->name('admin.')->group(function () {
+        
         // Dashboard Admin
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        // Manajemen Buku
-        Route::resource('buku', BukuController::class)->except(['show']); 
-        // Catatan: Saya sarankan pakai resource agar lebih ringkas, 
-        // tapi kalau mau pakai rute manual yang kamu buat tadi juga sudah benar.
-
-        // Jika tetap pakai rute manual, pastikan penamaannya konsisten:
+        // Manajemen Buku (Gunakan Manual Agar Nama Rute Sesuai dengan Controller Abang)
         Route::get('/buku', [BukuController::class, 'index'])->name('buku.index');           
         Route::get('/buku/tambah', [BukuController::class, 'create'])->name('buku.create');   
         Route::post('/buku/simpan', [BukuController::class, 'store'])->name('buku.store');    
@@ -57,17 +53,19 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/verifikasi/kembali-final/{id}', [PeminjamanController::class, 'verifikasiKembali'])->name('peminjaman.verifikasi-kembali');
         Route::post('/verifikasi/bayar-denda/{id}', [PeminjamanController::class, 'bayarDenda'])->name('peminjaman.bayar-denda');
 
-        // ROUTE MANAJEMEN USER
+        // Manajemen User
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::delete('/users/hapus/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 
     // --- KHUSUS ANGGOTA / SISWA ---
     Route::middleware(['peran:anggota'])->prefix('anggota')->name('anggota.')->group(function () {
+        
         // Dashboard Anggota
         Route::get('/dashboard', [DashboardController::class, 'anggota'])->name('dashboard');
 
-        // Proses Pinjam Buku (Prefix rute diubah agar tidak bentrok)
+        // Proses Pinjam Buku
+        // Nama rute: anggota.buku.pinjam
         Route::post('/pinjam/{id}', [BukuController::class, 'pinjam'])->name('buku.pinjam');
         
         // Buku Saya & Ajukan Kembali
