@@ -6,16 +6,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-// app/Models/User.php
-
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    // Nama tabel di database
     protected $table = 'pengguna';
     
-    // TAMBAHKAN BARIS INI
+    // Konfigurasi Primary Key karena bukan 'id' dan bukan Auto Increment
     protected $primaryKey = 'pengenal'; 
+    public $incrementing = false; 
+    protected $keyType = 'string'; 
 
     protected $fillable = [
         'pengenal',
@@ -30,7 +31,9 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // 3. PENTING: Beritahu Laravel bahwa kolom password kita namanya 'kata_sandi'
+    /**
+     * Beritahu Laravel bahwa kolom password kita namanya 'kata_sandi'
+     */
     public function getAuthPassword()
     {
         return $this->kata_sandi;

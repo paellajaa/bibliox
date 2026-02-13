@@ -17,18 +17,19 @@ class AuthController extends Controller
 
     public function login(Request $request) {
         $request->validate([
-            'email' => 'required|email',
-            'kata_sandi' => 'required',
+            // Pakai 'username' sesuai name di input form yang baru kita perbaiki
+            'username' => 'required', 
+            'password' => 'required',
         ]);
 
-        // Attempt login dengan email dan password
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->kata_sandi], $request->remember)) {
+        // Karena di database kolomnya 'email', kita mapping 'username' dari form ke 'email'
+        if (Auth::attempt(['email' => $request->username, 'password' => $request->password], $request->remember)) {
             $request->session()->regenerate();
             return $this->authenticatedRedirect();
         }
 
         throw ValidationException::withMessages([
-            'email' => ['Email atau kata sandi salah.'],
+            'username' => ['Email atau kata sandi salah.'],
         ]);
     }
 
@@ -37,33 +38,35 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-public function register(Request $request)
-{
-    // 1. Validasi Data
-    $request->validate([
-        'nama' => 'required|string|max:255',
-        'username' => 'required|string|unique:users,username',
-        'password' => 'required|min:6|confirmed', // Harus ada input password_confirmation di view
-    ]);
+    public function register(Request $request)
+    {
+        // 1. Validasi Data
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            // PENTING: Cek ke tabel 'pengguna' kolom 'email'
+            'username' => 'required|string|email|max:255|unique:pengguna,email', 
+            'password' => 'required|min:6|confirmed', 
+        ]);
 
-    // 2. Generate Pengenal Otomatis (Contoh: USR-2026001)
-    $count = \App\Models\User::count() + 1;
-    $pengenal = 'USR-' . date('Y') . str_pad($count, 3, '0', STR_PAD_LEFT);
+        // 2. Generate Pengenal Otomatis
+        $count = User::count() + 1;
+       $pengenal = date('Y') . str_pad($count, 3, '0', STR_PAD_LEFT);
 
-    // 3. Simpan ke Database
-    $user = \App\Models\User::create([
-        'pengenal' => $pengenal,
-        'nama'     => $request->nama,
-        'username' => $request->username,
-        'password' => \Hash::make($request->password),
-        'peran'    => 'anggota',
-    ]);
+        // 3. Simpan ke Database
+        $user = User::create([
+            'pengenal'   => $pengenal,
+            'nama'       => $request->nama,
+            'email'      => $request->username, // Simpan input username ke kolom email
+            'kata_sandi' => Hash::make($request->password),
+            'peran'      => 'anggota',
+        ]);
 
-    // 4. Langsung Login & Pindah ke Dashboard
-    \Auth::login($user);
+        // 4. Langsung Login
+        Auth::login($user);
+        $request->session()->regenerate();
 
-    return redirect()->route('anggota.dashboard')->with('success', 'Selamat Datang! Akun kamu berhasil dibuat.');
-}
+        return redirect()->route('anggota.dashboard')->with('success', 'Selamat Datang! Akun kamu berhasil dibuat.');
+    }
 
     public function logout(Request $request) {
         Auth::logout();
