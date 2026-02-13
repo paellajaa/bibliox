@@ -37,27 +37,33 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function register(Request $request) {
-        $request->validate([
-            'nama' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users', // Pastikan nama tabel benar, biasanya 'users'
-            'kata_sandi' => 'required|min:8',
-            'kata_sandi_confirmation' => 'required|same:kata_sandi',
-        ]);
+public function register(Request $request)
+{
+    // 1. Validasi Data
+    $request->validate([
+        'nama' => 'required|string|max:255',
+        'username' => 'required|string|unique:users,username',
+        'password' => 'required|min:6|confirmed', // Harus ada input password_confirmation di view
+    ]);
 
-        // PROTEKSI: Apapun yang diinput user, peran dipaksa menjadi 'anggota'
-        $user = User::create([
-            'nama' => $request->nama,
-            'email' => $request->email,
-            'kata_sandi' => Hash::make($request->kata_sandi),
-            'peran' => 'anggota', // Kunci mati agar tidak bisa disusupi jadi admin
-        ]);
+    // 2. Generate Pengenal Otomatis (Contoh: USR-2026001)
+    $count = \App\Models\User::count() + 1;
+    $pengenal = 'USR-' . date('Y') . str_pad($count, 3, '0', STR_PAD_LEFT);
 
-        Auth::login($user);
-        $request->session()->regenerate();
+    // 3. Simpan ke Database
+    $user = \App\Models\User::create([
+        'pengenal' => $pengenal,
+        'nama'     => $request->nama,
+        'username' => $request->username,
+        'password' => \Hash::make($request->password),
+        'peran'    => 'anggota',
+    ]);
 
-        return $this->authenticatedRedirect();
-    }
+    // 4. Langsung Login & Pindah ke Dashboard
+    \Auth::login($user);
+
+    return redirect()->route('anggota.dashboard')->with('success', 'Selamat Datang! Akun kamu berhasil dibuat.');
+}
 
     public function logout(Request $request) {
         Auth::logout();

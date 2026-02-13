@@ -48,7 +48,21 @@
     </div>
 
     <div class="w-full max-w-[450px] login-card p-10">
+        
+        {{-- Menampilkan Error Validasi --}}
+        @if ($errors->any())
+            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-xl">
+                <ul class="list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                        <li class="text-red-600 text-xs font-bold">{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        {{-- FORM ACTION --}}
         <form action="{{ route('register') }}" method="POST" class="space-y-5">
+            {{-- WAJIB: Token CSRF untuk mencegah Page Expired --}}
             @csrf
 
             <div>
@@ -58,20 +72,20 @@
             </div>
 
             <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Alamat Email</label>
-                <input type="email" name="email" value="{{ old('email') }}" required placeholder="email@bibliox.com"
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Username / ID Pengguna</label>
+                <input type="text" name="username" value="{{ old('username') }}" required placeholder="Contoh: ryan123"
                     class="w-full input-field rounded-xl px-5 py-3.5 text-slate-700 outline-none">
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Kata Sandi</label>
-                    <input type="password" name="kata_sandi" required placeholder="••••••••"
+                    <input type="password" name="password" required placeholder="••••••••"
                         class="w-full input-field rounded-xl px-5 py-3.5 text-slate-700 outline-none">
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Konfirmasi</label>
-                    <input type="password" name="kata_sandi_confirmation" required placeholder="••••••••"
+                    <input type="password" name="password_confirmation" required placeholder="••••••••"
                         class="w-full input-field rounded-xl px-5 py-3.5 text-slate-700 outline-none">
                 </div>
             </div>

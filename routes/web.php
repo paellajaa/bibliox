@@ -17,7 +17,7 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-// 2. GUEST ROUTES
+// 2. GUEST ROUTES (Login & Register)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -42,13 +42,14 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/buku/update/{id}', [BukuController::class, 'update'])->name('buku.update'); 
         Route::delete('/buku/hapus/{id}', [BukuController::class, 'destroy'])->name('buku.destroy'); 
 
-        // Verifikasi
+        // Verifikasi Peminjaman
         Route::get('/verifikasi', [PeminjamanController::class, 'index'])->name('peminjaman.index');
         Route::post('/verifikasi/setujui/{id}', [PeminjamanController::class, 'setujui'])->name('peminjaman.setujui');
         Route::post('/verifikasi/tolak/{id}', [PeminjamanController::class, 'tolak'])->name('peminjaman.tolak');
         Route::post('/verifikasi/kembali-final/{id}', [PeminjamanController::class, 'verifikasiKembali'])->name('peminjaman.verifikasi-kembali');
         Route::post('/verifikasi/bayar-denda/{id}', [PeminjamanController::class, 'bayarDenda'])->name('peminjaman.bayar-denda');
 
+        // Manajemen Users
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::delete('/users/hapus/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
@@ -56,14 +57,14 @@ Route::middleware(['auth'])->group(function () {
     // --- KHUSUS ANGGOTA / SISWA ---
     Route::middleware(['peran:anggota'])->prefix('anggota')->name('anggota.')->group(function () {
         
-        // Dashboard Anggota (URL: /anggota/dashboard)
+        // Dashboard Anggota
         Route::get('/dashboard', [DashboardController::class, 'anggota'])->name('dashboard');
 
-        // PERBAIKAN DISINI: Nama rute harus 'pinjam' agar menjadi 'anggota.pinjam'
+        // Pinjam Buku
         Route::post('/pinjam/{id}', [BukuController::class, 'pinjam'])->name('pinjam');
         
+        // Buku Saya & Pengembalian
         Route::get('/buku-saya', [PeminjamanController::class, 'bukuSaya'])->name('buku-saya');
-        
         Route::post('/buku-saya/ajukan-kembali/{id}', [PeminjamanController::class, 'ajukanPengembalian'])->name('peminjaman.ajukan-kembali');
     });
 });
