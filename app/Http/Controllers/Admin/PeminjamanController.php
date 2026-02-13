@@ -80,35 +80,24 @@ class PeminjamanController extends Controller
     /**
      * SISI ADMIN: Verifikasi Akhir Pengembalian (Cek Kondisi & Denda)
      */
-    public function verifikasiKembali(Request $request, $id)
-    {
-        $request->validate([
-            'kondisi' => 'required|in:bagus,rusak,hilang',
-            'denda' => 'nullable|numeric|min:0',
-            'catatan_admin' => 'nullable|string',
-        ]);
+public function verifikasiKembali(Request $request, $id)
+{
+    $peminjaman = Peminjaman::findOrFail($id);
 
-        $pinjam = Peminjaman::findOrFail($id);
-        $buku = Buku::where('kode_buku', $pinjam->buku_id)->first();
+    // 1. Tangkap catatan dari request dan simpan ke database
+    // Pastikan nama kolom di database sesuai (misal: 'catatan' atau 'keterangan')
+    $peminjaman->status = 'dikembalikan';
+    $peminjaman->catatan = $request->catatan; // Ini kuncinya!
+    $peminjaman->save();
 
-        // Jika bagus status jadi 'kembali', jika rusak/hilang status jadi 'rusak' (tagihan denda)
-        $statusAkhir = ($request->kondisi == 'bagus') ? 'kembali' : 'rusak';
-
-        $pinjam->update([
-            'status' => $statusAkhir,
-            'tanggal_kembali' => now(),
-            'total_denda' => $request->denda ?? 0,
-            'catatan_admin' => $request->catatan_admin,
-        ]);
-
-        // Stok bertambah jika buku ada fisiknya (Bagus atau Rusak). Jika Hilang stok tidak nambah.
-        if ($request->kondisi !== 'hilang' && $buku) {
-            $buku->increment('stok');
-        }
-
-        $pesan = ($statusAkhir == 'rusak') ? 'Buku diterima dengan tagihan denda.' : 'Buku kembali dengan selamat.';
-        return back()->with('success', $pesan);
+    // 2. Tambahkan stok buku kembali
+    $buku = Buku::where('kode_buku', $peminjaman->buku_id)->first();
+    if($buku) {
+        $buku->increment('stok');
     }
+
+    return back()->with('success', 'Buku berhasil diverifikasi kembali!');
+}
 
     /**
      * SISI ADMIN: Konfirmasi Pembayaran Denda
