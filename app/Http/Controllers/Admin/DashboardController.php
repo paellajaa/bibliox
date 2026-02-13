@@ -10,42 +10,29 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    /**
-     * Dashboard untuk Admin
-     */
     public function index()
     {
         $data = [
-            'total_buku'     => Buku::sum('stok'), // Menghitung semua stok buku yang ada
+            'total_buku'     => Buku::sum('stok') ?? 0, 
             'total_anggota'  => User::where('peran', 'anggota')->count(),
             'pinjaman_aktif' => Peminjaman::where('status', 'dipinjam')->count(),
-            'total_denda'    => Peminjaman::sum('total_denda'),
+            'total_denda'    => Peminjaman::sum('total_denda') ?? 0,
         ];
-
         return view('admin.dashboard', $data);
     }
 
-    /**
-     * Dashboard untuk Siswa / Anggota
-     */
     public function anggota()
     {
-        $user_id = Auth::user()->pengenal; // Ambil ID unik user yang login
+        $user = Auth::user();
+        $user_id = $user->pengenal; 
 
         $data = [
-            // Menghitung buku yang SEDANG dipinjam oleh user ini saja
-            'buku_dipinjam' => Peminjaman::where('user_id', $user_id)
-                                        ->where('status', 'dipinjam')
-                                        ->count(),
+            'buku_dipinjam' => Peminjaman::where('user_id', $user_id)->where('status', 'dipinjam')->count(),
+            'total_denda'   => Peminjaman::where('user_id', $user_id)->sum('total_denda') ?? 0,
             
-            // Menghitung total denda user ini saja
-            'total_denda'   => Peminjaman::where('user_id', $user_id)
-                                        ->sum('total_denda'),
-
-            // Ambil semua buku untuk ditampilkan di katalog dashboard
-            'all_books'     => Buku::all(),
+            // DISINI KUNCINYA: Pakai nama 'all_books' dan jangan pakai paginate dulu biar gak error links()
+            'all_books'     => Buku::latest()->get(), 
             
-            // Statistik total buku di perpustakaan
             'total_katalog' => Buku::count(),
         ];
 

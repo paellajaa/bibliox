@@ -13,12 +13,11 @@ use App\Http\Controllers\Admin\UserController;
 |--------------------------------------------------------------------------
 */
 
-// 1. HALAMAN UTAMA
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-// 2. GUEST ROUTES (Login & Register)
+// 2. GUEST ROUTES
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -26,16 +25,13 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-// 3. LOGOUT (Wajib Login)
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-// 4. GROUP AUTHENTICATED (Sudah Login)
+// 3. GROUP AUTHENTICATED
 Route::middleware(['auth'])->group(function () {
 
     // --- KHUSUS ADMIN ---
     Route::middleware(['peran:admin'])->prefix('admin')->name('admin.')->group(function () {
-        
-        // Dashboard Admin
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         // Manajemen Buku
@@ -46,14 +42,13 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/buku/update/{id}', [BukuController::class, 'update'])->name('buku.update'); 
         Route::delete('/buku/hapus/{id}', [BukuController::class, 'destroy'])->name('buku.destroy'); 
 
-        // Verifikasi Peminjaman & Pengembalian
+        // Verifikasi
         Route::get('/verifikasi', [PeminjamanController::class, 'index'])->name('peminjaman.index');
         Route::post('/verifikasi/setujui/{id}', [PeminjamanController::class, 'setujui'])->name('peminjaman.setujui');
         Route::post('/verifikasi/tolak/{id}', [PeminjamanController::class, 'tolak'])->name('peminjaman.tolak');
         Route::post('/verifikasi/kembali-final/{id}', [PeminjamanController::class, 'verifikasiKembali'])->name('peminjaman.verifikasi-kembali');
         Route::post('/verifikasi/bayar-denda/{id}', [PeminjamanController::class, 'bayarDenda'])->name('peminjaman.bayar-denda');
 
-        // Manajemen User
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::delete('/users/hapus/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
@@ -61,17 +56,14 @@ Route::middleware(['auth'])->group(function () {
     // --- KHUSUS ANGGOTA / SISWA ---
     Route::middleware(['peran:anggota'])->prefix('anggota')->name('anggota.')->group(function () {
         
-        // Dashboard Anggota
+        // Dashboard Anggota (URL: /anggota/dashboard)
         Route::get('/dashboard', [DashboardController::class, 'anggota'])->name('dashboard');
 
-        // Proses Pinjam Buku (URL: /anggota/pinjam/{id})
-        Route::post('/pinjam/{id}', [BukuController::class, 'pinjam'])->name('buku.pinjam');
+        // PERBAIKAN DISINI: Nama rute harus 'pinjam' agar menjadi 'anggota.pinjam'
+        Route::post('/pinjam/{id}', [BukuController::class, 'pinjam'])->name('pinjam');
         
-        // Buku Saya
         Route::get('/buku-saya', [PeminjamanController::class, 'bukuSaya'])->name('buku-saya');
         
-        // PROSES KEMBALIKAN BUKU (URL: /anggota/buku-saya/ajukan-kembali/{id})
         Route::post('/buku-saya/ajukan-kembali/{id}', [PeminjamanController::class, 'ajukanPengembalian'])->name('peminjaman.ajukan-kembali');
     });
-
 });

@@ -104,45 +104,37 @@ class BukuController extends Controller
     /**
      * FUNGSI PINJAM BUKU DENGAN MAKSIMAL PINJAM (Poin 1.8 TYPES & Logic)
      */
-    public function pinjam(Request $request, $id)
-    {
-        $buku = Buku::where('kode_buku', $id)->firstOrFail();
+public function pinjam(Request $request, $id)
+{
+    $buku = Buku::where('kode_buku', $id)->firstOrFail();
 
-        // 1. Cek stok buku
-        if ($buku->stok <= 0) {
-            return back()->with('error', 'Maaf, stok buku ini sedang habis!');
-        }
-
-        // 2. LOGIKA MAKSIMAL PINJAM: Cek berapa buku yang sedang dipinjam user ini
-        // Menghitung peminjaman yang statusnya bukan 'kembali' atau 'ditolak'
-        $jumlah_pinjam = Peminjaman::where('user_id', Auth::user()->pengenal)
-            ->whereIn('status', ['menunggu', 'dipinjam', 'proses_kembali', 'rusak'])
-            ->count();
-
-        if ($jumlah_pinjam >= 3) {
-            return back()->with('error', 'Gagal! Kamu sudah mencapai batas maksimal pinjam (3 buku).');
-        }
-
-        // 3. Validasi Durasi Input
-        $request->validate([
-            'durasi' => 'required|integer|min:1|max:14',
-        ]);
-
-        $durasi = (int) $request->durasi; 
-
-        // 4. Simpan data peminjaman
-        Peminjaman::create([
-            'user_id'             => Auth::user()->pengenal, 
-            'buku_id'             => $buku->kode_buku,       
-            'tanggal_pinjam'      => now(),
-            'durasi_hari'         => $durasi,
-            'tanggal_jatuh_tempo' => now()->addDays($durasi),
-            'status'              => 'menunggu'
-        ]);
-
-        // 5. Kurangi stok buku
-        $buku->decrement('stok');
-
-        return redirect()->route('anggota.dashboard')->with('success', 'Permintaan pinjam berhasil dikirim!');
+    // Cek Stok
+    if ($buku->stok <= 0) {
+        return back()->with('error', 'Stok buku habis!');
     }
+
+    // Cek Batas Pinjam (Maksimal 3 buku aktif)
+    $aktif = Peminjaman::where('user_id', Auth::user()->pengenal)
+                ->whereIn('status', ['menunggu', 'dipinjam', 'proses_kembali'])
+                ->count();
+
+    if ($aktif >= 3) {
+        return back()->with('error', 'Kamu sudah pinjam 3 buku, balikin dulu ya!');
+    }
+
+    $request->validate(['durasi' => 'required|integer|min:1|max:14']);
+
+    Peminjaman::create([
+        'user_id' => Auth::user()->pengenal,
+        'buku_id' => $buku->kode_buku,
+        'tanggal_pinjam' => now(),
+        'durasi_hari' => $request->durasi,
+        'tanggal_jatuh_tempo' => now()->addDays($request->durasi),
+        'status' => 'menunggu'
+    ]);
+
+    $buku->decrement('stok');
+
+    return redirect()->route('anggota.dashboard')->with('success', 'Berhasil diajukan!');
+}
 }

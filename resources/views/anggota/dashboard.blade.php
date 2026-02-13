@@ -48,7 +48,6 @@
                 <h4 class="text-slate-900 font-black truncate text-sm mb-1 uppercase tracking-tight">{{ $buku->judul }}</h4>
                 <p class="text-slate-400 text-[10px] mb-5 font-bold italic">Oleh: {{ $buku->penulis }}</p>
                 
-                {{-- TOMBOL MODAL: Mengirim kode_buku --}}
                 <button @click="openModal = true; bukuId = '{{ $buku->kode_buku }}'; bukuJudul = '{{ $buku->judul }}'"
                         {{ $buku->stok <= 0 ? 'disabled' : '' }}
                         class="w-full py-3.5 {{ $buku->stok > 0 ? 'bg-slate-900 text-white hover:bg-cyan-600' : 'bg-slate-100 text-slate-400' }} rounded-2xl text-[10px] font-black transition-all uppercase tracking-widest">
@@ -69,7 +68,7 @@
                 <p class="text-slate-400 text-sm font-bold mt-1" x-text="bukuJudul"></p>
             </div>
             
-            {{-- FORM ACTION: Manual diarahkan ke /anggota/pinjam/ --}}
+            {{-- BARIS 81 FIXED --}}
             <form :action="'/anggota/pinjam/' + bukuId" method="POST">
                 @csrf
                 <div class="mb-8">
@@ -88,4 +87,8 @@
 </div>
 
 <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<style>
+    [x-cloak] { display: none !important; }
+</style>
 @endsection
