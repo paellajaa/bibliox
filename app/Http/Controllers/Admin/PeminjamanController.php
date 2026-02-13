@@ -61,21 +61,22 @@ class PeminjamanController extends Controller
     /**
      * SISI SISWA: Mengajukan pengembalian (Lapor Kondisi)
      */
-    public function ajukanPengembalian(Request $request, $id)
-    {
-        $request->validate([
-            'catatan_siswa' => 'required|string|max:255',
-        ]);
+// Bagian Siswa (ajukanPengembalian)
+public function ajukanPengembalian(Request $request, $id)
+{
+    $request->validate([
+        'catatan_siswa' => 'nullable|string'
+    ]);
 
-        $pinjam = Peminjaman::findOrFail($id);
-        
-        $pinjam->update([
-            'status' => 'proses_kembali',
-            'catatan_siswa' => $request->catatan_siswa
-        ]);
+    $p = Peminjaman::findOrFail($id);
+    $p->update([
+        'status' => 'proses_kembali',
+        'catatan_siswa' => $request->catatan_siswa, // PASTIKAN BARIS INI ADA
+        'tanggal_kembali' => now()
+    ]);
 
-        return back()->with('success', 'Laporan pengembalian dikirim! Silakan serahkan buku fisik ke Pustakawan.');
-    }
+    return back()->with('success', 'Buku berhasil dikembalikan, tunggu verifikasi admin!');
+}
 
     /**
      * SISI ADMIN: Verifikasi Akhir Pengembalian (Cek Kondisi & Denda)
@@ -84,19 +85,25 @@ public function verifikasiKembali(Request $request, $id)
 {
     $peminjaman = Peminjaman::findOrFail($id);
 
-    // 1. Tangkap catatan dari request dan simpan ke database
-    // Pastikan nama kolom di database sesuai (misal: 'catatan' atau 'keterangan')
-    $peminjaman->status = 'dikembalikan';
-    $peminjaman->catatan = $request->catatan; // Ini kuncinya!
-    $peminjaman->save();
-
-    // 2. Tambahkan stok buku kembali
-    $buku = Buku::where('kode_buku', $peminjaman->buku_id)->first();
-    if($buku) {
-        $buku->increment('stok');
+    // Cek kondisi dari form verifikasi admin
+    if ($request->kondisi == 'rusak' || $request->kondisi == 'hilang') {
+        $peminjaman->status = 'rusak';
+        $peminjaman->total_denda = $request->denda;
+    } else {
+        $peminjaman->status = 'kembali';
+        
+        // Tambahkan stok buku kembali hanya jika kondisi bagus
+        $buku = Buku::where('kode_buku', $peminjaman->buku_id)->first();
+        if($buku) {
+            $buku->increment('stok');
+        }
     }
 
-    return back()->with('success', 'Buku berhasil diverifikasi kembali!');
+    // Simpan catatan dari Pustakawan/Admin
+    $peminjaman->catatan_admin = $request->catatan_admin; // Sesuaikan dengan name="catatan_admin" di form
+    $peminjaman->save();
+
+    return back()->with('success', 'Buku berhasil diverifikasi!');
 }
 
     /**

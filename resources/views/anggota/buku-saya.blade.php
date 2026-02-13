@@ -92,43 +92,45 @@
     </div>
 
     {{-- MODAL KEMBALI --}}
-    <div x-show="openReturn" 
-         class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" 
-         x-transition.opacity x-cloak>
+<div x-show="openReturn" 
+     class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" 
+     x-transition.opacity x-cloak>
+    
+    <div @click.away="openReturn = false" 
+         class="bg-white rounded-[3rem] p-10 w-full max-w-md shadow-2xl transform transition-all animate-fadeIn">
         
-        <div @click.away="openReturn = false" 
-             class="bg-white rounded-[3rem] p-10 w-full max-w-md shadow-2xl transform transition-all animate-fadeIn">
-            
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 bg-orange-50 text-orange-500 rounded-3xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-inner">
-                    📦
-                </div>
-                <h3 class="text-2xl font-black text-slate-900 uppercase italic tracking-tighter leading-none">Kembalikan Buku</h3>
-                <p class="text-slate-400 text-sm font-bold mt-2" x-text="bukuJudul"></p>
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-orange-50 text-orange-500 rounded-3xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-inner">
+                📦
             </div>
-            
-            {{-- PERBAIKAN URL: Harus /anggota/ agar sesuai dengan prefix di web.php --}}
-            <form :action="'/anggota/buku-saya/ajukan-kembali/' + pinjamId" method="POST">
-                @csrf
-                <div class="mb-8">
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Laporkan kondisi buku saat ini:</label>
-                    <textarea name="catatan_siswa" required rows="3"
-                        class="w-full bg-slate-50 border-2 border-slate-100 rounded-3xl px-6 py-4 text-sm font-bold text-slate-700 focus:outline-none focus:border-cyan-500 transition-all shadow-inner"
-                        placeholder="Contoh: Buku mulus bang, nggak ada yang sobek..."></textarea>
-                </div>
-
-                <div class="flex gap-4">
-                    <button type="button" @click="openReturn = false" 
-                            class="flex-1 py-5 bg-slate-100 text-slate-500 rounded-2xl font-black text-[11px] uppercase tracking-widest">
-                        Batal
-                    </button>
-                    <button type="submit" 
-                            class="flex-1 py-5 bg-orange-500 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-orange-600 transition-all">
-                        Kirim Laporan
-                    </button>
-                </div>
-            </form>
+            <h3 class="text-2xl font-black text-slate-900 uppercase italic tracking-tighter leading-none">Kembalikan Buku</h3>
+            <p class="text-slate-400 text-sm font-bold mt-2" x-text="bukuJudul"></p>
         </div>
+        
+        {{-- Gunakan template string JS untuk action agar lebih rapi --}}
+        <form :action="`/anggota/buku-saya/ajukan-kembali/${pinjamId}`" method="POST">
+            @csrf
+            <div class="mb-8">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
+                    Laporkan kondisi buku saat ini:
+                </label>
+                {{-- Nama 'catatan_siswa' harus sama dengan di Controller --}}
+                <textarea name="catatan_siswa" required rows="3"
+                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-3xl px-6 py-4 text-sm font-bold text-slate-700 focus:outline-none focus:border-orange-500 transition-all shadow-inner"
+                    placeholder="Contoh: Buku mulus bang, nggak ada yang sobek..."></textarea>
+            </div>
+
+            <div class="flex gap-4">
+                <button type="button" @click="openReturn = false" 
+                        class="flex-1 py-5 bg-slate-100 text-slate-500 rounded-2xl font-black text-[11px] uppercase tracking-widest">
+                    Batal
+                </button>
+                <button type="submit" 
+                        class="flex-1 py-5 bg-orange-500 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-orange-600 transition-all">
+                    Kirim Laporan
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 

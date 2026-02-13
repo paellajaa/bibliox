@@ -13,18 +13,19 @@ class Peminjaman extends Model
     protected $table = 'peminjaman';
 
     // Daftar kolom yang boleh diisi secara massal
-    protected $fillable = [
-        'user_id',
-        'buku_id',
-        'tanggal_pinjam',
-        'durasi_hari',
-        'tanggal_jatuh_tempo',
-        'tanggal_kembali',
-        'status',
-        'total_denda',
-        'status_denda'
-    ];
-
+   protected $fillable = [
+    'user_id',
+    'buku_id',
+    'tanggal_pinjam',
+    'durasi_hari',
+    'tanggal_jatuh_tempo',
+    'tanggal_kembali',
+    'status',
+    'total_denda',
+    'status_denda',
+    'catatan_siswa', 
+    'catatan_admin'  
+];
     /**
      * Hubungan ke model Buku
      */
