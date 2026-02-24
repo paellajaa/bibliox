@@ -8,32 +8,18 @@ use Illuminate\Support\Facades\Hash;
 
 class PenggunaSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // 1. Buat Akun Admin
-        User::create([
-            'nama' => 'Admin Bibliox',
-            'email' => 'admin@bibliox.com',
-            'peran' => 'admin',
-            'kata_sandi' => Hash::make('admin123'),
-        ]);
+        // Hapus data lama agar tidak bentrok
+        User::where('email', 'admin@bibliox.com')->delete();
 
-        // 2. Buat Akun Anggota Contoh Dummy
+        // Buat Akun Admin Baru sesuai keinginan
         User::create([
-            'nama' => 'Budi Santoso',
-            'email' => 'budi@gmail.com',
-            'peran' => 'anggota',
-            'kata_sandi' => Hash::make('anggota123'),
-        ]);
-
-        User::create([
-            'nama' => 'Siti Aminah',
-            'email' => 'siti@gmail.com',
-            'peran' => 'anggota',
-            'kata_sandi' => Hash::make('anggota123'),
+            'pengenal'   => 'ADM001',           // Berikan ID pengenal manual
+            'nama'       => 'Admin Baru',
+            'email'      => 'admin@test.com',   // Ganti email ke sini
+            'kata_sandi' => Hash::make('admin123'), // Password tetap admin123
+            'peran'      => 'admin',
         ]);
     }
 }
