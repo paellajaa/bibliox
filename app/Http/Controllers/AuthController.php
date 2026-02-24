@@ -14,25 +14,24 @@ class AuthController extends Controller
     }
 
     public function login(Request $request) {
-        $request->validate([
-            'username' => 'required', // Email dari form
-            'password' => 'required',
-        ]);
+    $request->validate([
+        'username' => 'required',
+        'password' => 'required',
+    ]);
 
-        $user = User::where('email', $request->username)->first();
+    $user = User::where('email', $request->username)->first();
 
-        // Cek manual ke kolom kata_sandi
-        if ($user && Hash::check($request->password, $user->kata_sandi)) {
-            Auth::login($user);
-            $request->session()->regenerate();
-            
-            return ($user->peran === 'admin') 
-                ? redirect()->route('admin.dashboard') 
-                : redirect()->route('anggota.dashboard');
-        }
-
-        return back()->withErrors(['username' => 'Kredensial salah!']);
+    if ($user && \Hash::check($request->password, $user->kata_sandi)) {
+        \Auth::login($user); // Login user
+        $request->session()->regenerate(); // Buat session baru agar tidak expired
+        
+        return ($user->peran === 'admin') 
+            ? redirect()->intended('/admin/dashboard') 
+            : redirect()->intended('/anggota/dashboard');
     }
+
+    return back()->withErrors(['username' => 'Kredensial salah!'])->withInput();
+}
 
     public function showRegister() {
         return view('auth.register');
