@@ -10,8 +10,8 @@ class User extends Authenticatable
     use Notifiable;
 
     protected $table = 'pengguna';
-    protected $primaryKey = 'pengenal'; // Wajib karena ID kamu bukan 'id'
-    public $incrementing = false;       // Wajib karena ID kamu String
+    protected $primaryKey = 'pengenal'; // Menggunakan kolom pengenal sebagai ID
+    public $incrementing = false;       // Karena ADM001 itu string
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -22,7 +22,7 @@ class User extends Authenticatable
         'kata_sandi', 'remember_token',
     ];
 
-    // Beritahu Laravel kolom passwordnya adalah 'kata_sandi'
+    // Beritahu Laravel kalau password kamu ada di kolom kata_sandi
     public function getAuthPassword()
     {
         return $this->kata_sandi;

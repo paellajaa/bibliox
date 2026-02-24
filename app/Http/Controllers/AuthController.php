@@ -10,28 +10,33 @@ use Illuminate\Support\Facades\Hash;
 class AuthController extends Controller
 {
     public function showLogin() {
+        if (Auth::check()) return $this->authenticatedRedirect();
         return view('auth.login');
     }
 
     public function login(Request $request) {
-    $request->validate([
-        'username' => 'required',
-        'password' => 'required',
-    ]);
+        $request->validate([
+            'username' => 'required', // Ini akan diisi ID (ADM001)
+            'password' => 'required',
+        ]);
 
-    $user = User::where('email', $request->username)->first();
+        // 1. Cari user di tabel pengguna berdasarkan kolom pengenal
+        $user = User::where('pengenal', $request->username)->first();
 
-    if ($user && \Hash::check($request->password, $user->kata_sandi)) {
-        \Auth::login($user); // Login user
-        $request->session()->regenerate(); // Buat session baru agar tidak expired
-        
-        return ($user->peran === 'admin') 
-            ? redirect()->intended('/admin/dashboard') 
-            : redirect()->intended('/anggota/dashboard');
+        // 2. Cek apakah user ada DAN passwordnya cocok
+        if ($user && Hash::check($request->password, $user->kata_sandi)) {
+            // 3. Kalau cocok, login-kan manual menggunakan objek $user
+            Auth::login($user, $request->has('remember'));
+            
+            $request->session()->regenerate();
+            $request->session()->save();
+
+            return $this->authenticatedRedirect();
+        }
+
+        // 4. Kalau gagal ke sini
+        return back()->withErrors(['username' => 'ID atau Kata Sandi salah!'])->withInput();
     }
-
-    return back()->withErrors(['username' => 'Kredensial salah!'])->withInput();
-}
 
     public function showRegister() {
         return view('auth.register');
@@ -39,27 +44,41 @@ class AuthController extends Controller
 
     public function register(Request $request) {
         $request->validate([
-            'nama' => 'required',
-            'email' => 'required|email|unique:pengguna,email',
-            'password' => 'required|min:6|confirmed',
+            'nama' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:pengguna,email', 
+            'password' => 'required|min:6|confirmed', 
         ]);
 
-        $pengenal = 'USR' . rand(100, 999);
+        $count = User::count() + 1;
+        $pengenal = date('Y') . str_pad($count, 3, '0', STR_PAD_LEFT);
 
         $user = User::create([
-            'pengenal' => $pengenal,
-            'nama' => $request->nama,
-            'email' => $request->email,
+            'pengenal'   => $pengenal,
+            'nama'       => $request->nama,
+            'email'      => $request->email,
             'kata_sandi' => Hash::make($request->password),
-            'peran' => 'anggota',
+            'peran'      => 'anggota',
         ]);
 
         Auth::login($user);
+        $request->session()->regenerate();
+        $request->session()->save();
+
         return redirect()->route('anggota.dashboard');
     }
 
     public function logout(Request $request) {
         Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect('/');
+    }
+
+    protected function authenticatedRedirect() {
+        $user = Auth::user();
+        if ($user->peran === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect()->route('anggota.dashboard');
     }
 }
