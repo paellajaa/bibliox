@@ -3,17 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    use Notifiable;
+
     protected $table = 'pengguna';
     protected $primaryKey = 'pengenal';
     public $incrementing = false;
     protected $keyType = 'string';
 
-    protected $fillable = ['pengenal', 'nama', 'email', 'kata_sandi', 'peran'];
+    protected $fillable = [
+        'pengenal', 'nama', 'email', 'kata_sandi', 'peran',
+    ];
 
-    // INI WAJIB: Supaya Laravel tahu kolom password adalah 'kata_sandi'
+    // INI KUNCI LOGIN: Agar Laravel tahu kolom password adalah 'kata_sandi'
     public function getAuthPassword()
     {
         return $this->kata_sandi;

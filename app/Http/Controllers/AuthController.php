@@ -2,46 +2,65 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
     public function showLogin() {
-        if (Auth::check()) return $this->authenticatedRedirect();
         return view('auth.login');
     }
 
     public function login(Request $request) {
         $request->validate([
-            'username' => 'required', // Ini menampung email dari form
+            'username' => 'required', // Email dari form
             'password' => 'required',
         ]);
 
-        // Laravel otomatis akan mengecek ke kolom 'kata_sandi' karena fungsi di Model tadi
-        if (Auth::attempt(['email' => $request->username, 'password' => $request->password], $request->remember)) {
+        $user = User::where('email', $request->username)->first();
+
+        // Cek manual ke kolom kata_sandi
+        if ($user && Hash::check($request->password, $user->kata_sandi)) {
+            Auth::login($user);
             $request->session()->regenerate();
-            return $this->authenticatedRedirect();
+            
+            return ($user->peran === 'admin') 
+                ? redirect()->route('admin.dashboard') 
+                : redirect()->route('anggota.dashboard');
         }
 
-        throw ValidationException::withMessages([
-            'username' => ['Kredensial yang Anda berikan salah.'],
+        return back()->withErrors(['username' => 'Kredensial salah!']);
+    }
+
+    public function showRegister() {
+        return view('auth.register');
+    }
+
+    public function register(Request $request) {
+        $request->validate([
+            'nama' => 'required',
+            'email' => 'required|email|unique:pengguna,email',
+            'password' => 'required|min:6|confirmed',
         ]);
+
+        $pengenal = 'USR' . rand(100, 999);
+
+        $user = User::create([
+            'pengenal' => $pengenal,
+            'nama' => $request->nama,
+            'email' => $request->email,
+            'kata_sandi' => Hash::make($request->password),
+            'peran' => 'anggota',
+        ]);
+
+        Auth::login($user);
+        return redirect()->route('anggota.dashboard');
     }
 
     public function logout(Request $request) {
         Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
         return redirect('/');
-    }
-
-    protected function authenticatedRedirect() {
-        $user = Auth::user();
-        if ($user->peran === 'admin') {
-            return redirect()->route('admin.dashboard');
-        }
-        return redirect()->route('anggota.dashboard');
     }
 }
