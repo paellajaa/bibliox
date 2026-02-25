@@ -23,11 +23,9 @@
     {{-- Navbar --}}
     <nav class="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div class="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center">
-                    <span class="text-cyan-500 font-black text-xl italic">B</span>
-                </div>
-                <h1 class="text-2xl font-black italic tracking-tighter text-slate-900">BIBLIOX</h1>
+           <div class="flex items-center h-16 overflow-hidden">
+                <img src="{{ asset('images/logo-bibliox.png') }}" alt="BiblioX" 
+                    class="w-20 h-20 object-contain -ml-2"> 
             </div>
 
             <div class="flex items-center gap-8">

@@ -72,11 +72,6 @@
             to { transform: translateX(0); opacity: 1; }
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
         @keyframes gradientShift {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -408,51 +403,67 @@
             animation: slideInRight 1s ease-out;
         }
         
-        .floating-card {
+        /* ===== PERBAIKAN: floating-logo-container dan style pendukung ===== */
+        .floating-logo-container {
             width: 100%;
             max-width: 500px;
-            height: 600px;
+            margin: 0 auto;
+            padding: 30px;
             background: white;
             border-radius: 30px;
             box-shadow: var(--shadow-xl);
-            padding: 30px;
             position: relative;
             overflow: hidden;
-            margin: 0 auto;
-        }
-        
-        .card-content {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
             text-align: center;
-            position: relative;
-            z-index: 2;
         }
-        
-        .book-icon {
-            font-size: 6rem;
-            margin-bottom: 30px;
+
+        .main-floating-logo {
+            width: 180px;
+            height: auto;
+            margin: 20px auto;
             display: block;
-            animation: float 4s ease-in-out infinite;
+            animation: float 5s ease-in-out infinite;
+            filter: drop-shadow(0 15px 25px rgba(37,99,235,0.25));
+            border-radius: 40px;
+            background: linear-gradient(145deg, #ffffff, #f0f4ff);
+            padding: 25px;
+            box-shadow: 0 15px 35px -8px rgba(37,99,235,0.2);
         }
-        
-        .card-title {
-            font-size: 2.2rem;
+
+        .logo-shadow {
+            width: 160px;
+            height: 30px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 50%;
+            margin: -10px auto 30px;
+            filter: blur(12px);
+            animation: pulse 3s infinite;
+        }
+
+        .mt-8 {
+            margin-top: 2rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-2xl {
+            font-size: 1.8rem;
             font-weight: 800;
             color: var(--dark);
-            margin-bottom: 15px;
+            margin-bottom: 8px;
         }
-        
-        .card-subtitle {
+
+        .text-slate-500 {
             color: #64748b;
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 40px;
+            font-weight: 500;
         }
-        
+
+        .font-bold {
+            font-weight: 700;
+        }
+
         .book-list {
             width: 100%;
             display: flex;
@@ -510,6 +521,7 @@
             border-radius: 50%;
             z-index: 1;
         }
+        /* ===== AKHIR PERBAIKAN ===== */
         
         /* Features Section */
         .features {
@@ -718,6 +730,16 @@
             transform: translateY(0);
         }
         
+        /* Rive Animation Container */
+        #rive-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
         /* Responsiveness */
         @media (max-width: 1024px) {
             h1 {
@@ -784,16 +806,6 @@
             .section-title {
                 font-size: 2.2rem;
             }
-        }
-        
-        /* Rive Animation Container */
-        #rive-animation {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
         }
     </style>
 </head>
@@ -879,40 +891,46 @@
                 </div>
             </div>
             
+            <!-- ===== BAGIAN HERO VISUAL YANG SUDAH DIPERBAIKI ===== -->
             <div class="hero-visual">
-                <div class="floating-card fade-in">
-                    <div class="card-content">
-                        <div class="book-icon">📚</div>
-                        <h3 class="card-title">Koleksi Populer</h3>
-                        <p class="card-subtitle">Update Mingguan BIBLIOX</p>
-                        
-                        <div class="book-list">
-                            <div class="book-item">
-                                <div class="book-cover">
-                                    <i class="fas fa-book"></i>
-                                </div>
-                                <div class="book-info">
-                                    <h4>Seni Berpikir Digital</h4>
-                                    <p>Teknologi & Masa Depan</p>
-                                </div>
+                <div class="floating-logo-container fade-in">
+                    <!-- Menggunakan data URI sementara agar tampil sebagai logo (simulasi gambar) -->
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='url(%23g)' /%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%232563eb'/%3E%3Cstop offset='50%25' stop-color='%2306b6d4'/%3E%3Cstop offset='100%25' stop-color='%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ctext x='20' y='65' font-family='Arial' font-size='36' font-weight='bold' fill='white'%3EBX%3C/text%3E%3C/svg%3E" 
+                         alt="BiblioX Logo" class="main-floating-logo">
+                    
+                    <div class="logo-shadow"></div>
+                    
+                    <div class="mt-8 text-center">
+                        <h3 class="text-2xl font-bold text-slate-800">Koleksi Populer</h3>
+                        <p class="text-slate-500 font-medium">Update Mingguan BIBLIOX</p>
+                    </div>
+
+                    <div class="book-list">
+                        <div class="book-item">
+                            <div class="book-cover">
+                                <i class="fas fa-book"></i>
                             </div>
-                            <div class="book-item">
-                                <div class="book-cover">
-                                    <i class="fas fa-atom"></i>
-                                </div>
-                                <div class="book-info">
-                                    <h4>Quantum Learning</h4>
-                                    <p>Pendidikan & Pengembangan</p>
-                                </div>
+                            <div class="book-info">
+                                <h4>Seni Berpikir Digital</h4>
+                                <p>Teknologi & Masa Depan</p>
                             </div>
-                            <div class="book-item">
-                                <div class="book-cover">
-                                    <i class="fas fa-chart-line"></i>
-                                </div>
-                                <div class="book-info">
-                                    <h4>Ekonomi Kreatif</h4>
-                                    <p>Bisnis & Kewirausahaan</p>
-                                </div>
+                        </div>
+                        <div class="book-item">
+                            <div class="book-cover">
+                                <i class="fas fa-atom"></i>
+                            </div>
+                            <div class="book-info">
+                                <h4>Quantum Learning</h4>
+                                <p>Pendidikan & Pengembangan</p>
+                            </div>
+                        </div>
+                        <div class="book-item">
+                            <div class="book-cover">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="book-info">
+                                <h4>Ekonomi Kreatif</h4>
+                                <p>Bisnis & Kewirausahaan</p>
                             </div>
                         </div>
                     </div>
@@ -1136,21 +1154,26 @@
             });
         });
 
-        // Initialize Rive animation
-        // Note: You need to replace the URL with your actual Rive animation file
-        // For now, we'll use a fallback if Rive is not available
+        // Rive fallback
         if (typeof rive !== 'undefined') {
-            const r = new rive.Rive({
-                src: 'https://cdn.rive.app/animations/off_road_car_v7.riv',
-                canvas: document.getElementById('rive-animation'),
-                autoplay: true,
-                stateMachines: 'state_machine_name',
-                onLoad: () => {
-                    r.resizeDrawingSurfaceToCanvas();
-                },
-            });
+            try {
+                const r = new rive.Rive({
+                    src: 'https://cdn.rive.app/animations/off_road_car_v7.riv',
+                    canvas: document.getElementById('rive-animation'),
+                    autoplay: true,
+                    stateMachines: 'state_machine_name',
+                    onLoad: () => {
+                        r.resizeDrawingSurfaceToCanvas();
+                    },
+                });
+            } catch (e) {
+                fallbackRive();
+            }
         } else {
-            // Fallback background gradient animation
+            fallbackRive();
+        }
+
+        function fallbackRive() {
             const riveContainer = document.getElementById('rive-animation');
             riveContainer.style.background = 'linear-gradient(135deg, #2563eb, #06b6d4, #8b5cf6)';
             riveContainer.style.backgroundSize = '400% 400%';
@@ -1179,7 +1202,6 @@
             });
         };
         
-        // Trigger stats animation when stats are visible
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -1191,7 +1213,7 @@
         
         observer.observe(statsSection);
 
-        // Add hover effect to feature cards
+        // Hover effect feature cards
         const featureCards = document.querySelectorAll('.feature-card');
         featureCards.forEach(card => {
             card.addEventListener('mouseenter', function() {
@@ -1203,44 +1225,42 @@
             });
         });
 
-        // Add typing effect to hero title (optional)
-        const heroTitle = document.querySelector('.gradient-text');
-        const originalText = heroTitle.textContent;
-        const texts = ['Tanpa Batas', 'Dimana Saja', 'Kapan Saja', 'Gratis Akses'];
-        let currentTextIndex = 0;
-        
-        function typeEffect() {
-            let currentText = texts[currentTextIndex];
-            let charIndex = 0;
-            let isDeleting = false;
+        // Typing effect for gradient-text (optional)
+        const heroTitleSpan = document.querySelector('.gradient-text');
+        if (heroTitleSpan) {
+            const texts = ['Tanpa Batas', 'Dimana Saja', 'Kapan Saja', 'Gratis Akses'];
+            let currentTextIndex = 0;
             
-            function type() {
-                if (isDeleting) {
-                    heroTitle.textContent = currentText.substring(0, charIndex - 1);
-                    charIndex--;
-                } else {
-                    heroTitle.textContent = currentText.substring(0, charIndex + 1);
-                    charIndex++;
-                }
+            function typeEffect() {
+                let currentText = texts[currentTextIndex];
+                let charIndex = 0;
+                let isDeleting = false;
                 
-                if (!isDeleting && charIndex === currentText.length) {
-                    isDeleting = true;
-                    setTimeout(type, 2000);
-                } else if (isDeleting && charIndex === 0) {
-                    isDeleting = false;
-                    currentTextIndex = (currentTextIndex + 1) % texts.length;
-                    currentText = texts[currentTextIndex];
-                    setTimeout(type, 500);
-                } else {
-                    setTimeout(type, isDeleting ? 50 : 100);
+                function type() {
+                    if (isDeleting) {
+                        heroTitleSpan.textContent = currentText.substring(0, charIndex - 1);
+                        charIndex--;
+                    } else {
+                        heroTitleSpan.textContent = currentText.substring(0, charIndex + 1);
+                        charIndex++;
+                    }
+                    
+                    if (!isDeleting && charIndex === currentText.length) {
+                        isDeleting = true;
+                        setTimeout(type, 2000);
+                    } else if (isDeleting && charIndex === 0) {
+                        isDeleting = false;
+                        currentTextIndex = (currentTextIndex + 1) % texts.length;
+                        currentText = texts[currentTextIndex];
+                        setTimeout(type, 500);
+                    } else {
+                        setTimeout(type, isDeleting ? 50 : 100);
+                    }
                 }
+                type();
             }
-            
-            type();
+            setTimeout(typeEffect, 3000);
         }
-        
-        // Start typing effect after 3 seconds
-        setTimeout(typeEffect, 3000);
     </script>
 </body>
 </html>

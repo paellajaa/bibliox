@@ -16,11 +16,9 @@
 </head>
 <body class="bg-[#F8FAFC] flex items-center justify-center min-h-screen p-6 font-['Plus_Jakarta_Sans']">
     <div class="w-full max-w-md">
-        <div class="text-center mb-10">
-            <a href="/" class="inline-flex w-16 h-16 bg-blue-600 rounded-2xl items-center justify-center shadow-2xl shadow-blue-600/40 mb-4 transform -rotate-6 hover:rotate-0 transition-transform cursor-pointer">
-                <span class="text-white font-black text-3xl italic">X</span>
-            </a>
-            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tighter uppercase">BIBLIOX LOGIN</h1>
+        <div class="flex flex-col items-center justify-center mb-4">
+            <img src="{{ asset('images/logo-bibliox.png') }}" alt="BiblioX" 
+                class="w-36 h-36 object-contain drop-shadow-lg">
             <p class="text-slate-400 mt-2 font-medium">Silakan masuk ke akun Anda</p>
         </div>
 

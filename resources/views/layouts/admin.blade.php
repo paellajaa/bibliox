@@ -18,9 +18,9 @@
     <div class="flex min-h-screen">
         <aside class="w-72 bg-white border-r border-slate-100 flex flex-col fixed h-full z-20 shadow-sm">
             <div class="p-8">
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="w-10 h-10 bg-cyan-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-cyan-200 font-bold text-xl">B</div>
-                    <h1 class="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">BIBLIO<span class="text-cyan-600">X</span></h1>
+                <div class="flex flex-col items-center justify-center py-4 mb-2">
+                    <img src="{{ asset('images/logo-bibliox.png') }}" alt="BiblioX" 
+                        class="w-32 h-32 object-contain scale-110"> 
                 </div>
                 <p class="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold ml-1">
                     {{ Auth::user()->peran === 'admin' ? 'Pustakawan System' : 'Member Library' }}
