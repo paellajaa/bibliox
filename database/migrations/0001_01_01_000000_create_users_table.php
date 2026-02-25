@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pengguna', function (Blueprint $table) {
-            $table->id('pengenal'); // Primary Key custom
-            $table->string('nama');
-            $table->string('email')->unique();
-            $table->enum('peran', ['admin', 'anggota'])->default('anggota');
-            $table->string('kata_sandi');
-            $table->rememberToken();
-            $table->timestamps();
-        });
+           $table->string('pengenal')->primary(); 
+        $table->string('nama');
+        $table->string('email')->unique();
+        $table->enum('peran', ['admin', 'anggota'])->default('anggota');
+        $table->string('kata_sandi');
+        $table->rememberToken();
+        $table->timestamps();
+    });
 
         // Bagian ini opsional tapi baik untuk ada
         Schema::create('password_reset_tokens', function (Blueprint $table) {

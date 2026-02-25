@@ -15,8 +15,12 @@ class AuthController extends Controller
     }
 
   public function login(Request $request) {
-    $user = \App\Models\User::where('email', $request->username)->first();
+    $request->validate([
+        'username' => 'required|email',
+        'password' => 'required',
+    ]);
 
+    $user = \App\Models\User::where('email', $request->username)->first();
     if ($user && \Hash::check($request->password, $user->kata_sandi)) {
         \Auth::login($user);
         $request->session()->regenerate();
