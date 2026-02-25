@@ -13,14 +13,14 @@ class PenggunaSeeder extends Seeder
      */
     public function run(): void
     {
-        User::updateOrCreate(
-            ['email' => 'admin@test.com'], // Gunakan email sebagai kunci pencarian
-            [
-                'pengenal'   => 'ADM001',
-                'nama'       => 'Administrator',
-                'kata_sandi' => Hash::make('admin123'),
-                'peran'      => 'admin',
-            ]
-        );
+     User::updateOrCreate(
+    ['email' => 'admin@test.com'],
+    [
+        'pengenal'   => 'ADM001',
+        'nama'       => 'Administrator',
+        'kata_sandi' => Hash::make('admin123'),
+        'peran'      => 'admin',
+    ]
+);
     }
 }
