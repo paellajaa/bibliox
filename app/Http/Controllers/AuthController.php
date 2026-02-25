@@ -16,29 +16,29 @@ class AuthController extends Controller
 
     public function login(Request $request) {
         $request->validate([
-            'username' => 'required', // Ini akan diisi ID (ADM001)
+            'username' => 'required', 
             'password' => 'required',
         ]);
 
-        // 1. Cari user di tabel pengguna berdasarkan kolom pengenal
+        // Cari berdasarkan kolom pengenal (ID)
         $user = User::where('pengenal', $request->username)->first();
 
-        // 2. Cek apakah user ada DAN passwordnya cocok
+        // Cek password manual terhadap kolom kata_sandi
         if ($user && Hash::check($request->password, $user->kata_sandi)) {
-            // 3. Kalau cocok, login-kan manual menggunakan objek $user
             Auth::login($user, $request->has('remember'));
             
+            // WAJIB: Simpan session sebelum redirect
             $request->session()->regenerate();
             $request->session()->save();
 
             return $this->authenticatedRedirect();
         }
 
-        // 4. Kalau gagal ke sini
         return back()->withErrors(['username' => 'ID atau Kata Sandi salah!'])->withInput();
     }
 
     public function showRegister() {
+        if (Auth::check()) return $this->authenticatedRedirect();
         return view('auth.register');
     }
 
@@ -76,6 +76,8 @@ class AuthController extends Controller
 
     protected function authenticatedRedirect() {
         $user = Auth::user();
+        if (!$user) return redirect()->route('login');
+
         if ($user->peran === 'admin') {
             return redirect()->route('admin.dashboard');
         }
