@@ -60,10 +60,11 @@ return [
     */
 
     'providers' => [
-        'users' => [
-            'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\User::class),
-        ],
+    'users' => [
+        'driver' => 'eloquent',
+        'model' => App\Models\User::class, // PASTIKAN INI BENAR
+    ],
+
 
         // 'users' => [
         //     'driver' => 'database',
@@ -71,7 +72,12 @@ return [
         // ],
     ],
 
-    /*
+    /*'providers' => [
+    'users' => [
+        'driver' => 'eloquent',
+        'model' => App\Models\User::class, // PASTIKAN INI BENAR
+    ],
+],
     |--------------------------------------------------------------------------
     | Resetting Passwords
     |--------------------------------------------------------------------------

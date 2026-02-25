@@ -8,17 +8,15 @@ use Illuminate\Support\Facades\Hash;
 
 class PenggunaSeeder extends Seeder
 {
-    public function run(): void
-    {
-        // Bersihkan data lama supaya tidak dobel
-        User::where('pengenal', 'ADM001')->delete();
-
-       User::create([
-    'pengenal'   => 'ADM001',
-    'nama'       => 'Administrator',
-    'email'      => 'admin@test.com',
-    'kata_sandi' => Hash::make('admin123'), // Pastikan menggunakan Hash::make
-    'peran'      => 'admin',
-]);
-    }
+   public function run(): void
+{
+    \App\Models\User::updateOrCreate(
+        ['email' => 'admin@test.com'], // Cari berdasarkan email
+        [
+            'pengenal'   => 'ADM001',
+            'nama'       => 'Administrator',
+            'kata_sandi' => \Illuminate\Support\Facades\Hash::make('admin123'), // WAJIB ADA HASH
+            'peran'      => 'admin',
+        ]
+    );
 }

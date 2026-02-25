@@ -14,28 +14,16 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request) {
-        $request->validate([
-            'username' => 'required', 
-            'password' => 'required',
-        ]);
+  public function login(Request $request) {
+    $user = \App\Models\User::where('email', $request->username)->first();
 
-        // Cari berdasarkan kolom pengenal (ID)
-        $user = User::where('pengenal', $request->username)->first();
-
-        // Cek password manual terhadap kolom kata_sandi
-        if ($user && Hash::check($request->password, $user->kata_sandi)) {
-            Auth::login($user, $request->has('remember'));
-            
-            // WAJIB: Simpan session sebelum redirect
-            $request->session()->regenerate();
-            $request->session()->save();
-
-            return $this->authenticatedRedirect();
-        }
-
-        return back()->withErrors(['username' => 'ID atau Kata Sandi salah!'])->withInput();
+    if ($user && \Hash::check($request->password, $user->kata_sandi)) {
+        \Auth::login($user);
+        $request->session()->regenerate();
+        return $this->authenticatedRedirect();
     }
+    return back()->withErrors(['username' => 'Login Gagal!']);
+}
 
     public function showRegister() {
         if (Auth::check()) return $this->authenticatedRedirect();
