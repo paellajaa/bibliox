@@ -10,17 +10,37 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
-    {
-        $data = [
-            'total_buku'     => Buku::sum('stok') ?? 0, 
-            'total_anggota'  => User::where('peran', 'anggota')->count(),
-            'pinjaman_aktif' => Peminjaman::where('status', 'dipinjam')->count(),
-            'total_denda'    => Peminjaman::sum('total_denda') ?? 0,
-        ];
-        return view('admin.dashboard', $data);
+// app/Http/Controllers/Admin/DashboardController.php
+
+public function index(Request $request)
+{
+    // 1. Mulai query dasar
+    $query = Buku::query();
+
+    // 2. Filter Kategori (Lakukan ini dulu agar mengunci hasil)
+    if ($request->filled('kategori')) {
+        $query->where('kategori', $request->kategori);
     }
 
+    // 3. Logika Pencarian (Harus dibungkus GROUP agar tidak bocor kategori)
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('judul', 'like', '%' . $search . '%')
+              ->orWhere('penulis', 'like', '%' . $search . '%');
+        });
+    }
+
+    // 4. Eksekusi query
+    $all_books = $query->get();
+    
+    // 5. Ambil daftar kategori yang UNIK dari database untuk tombol filter
+    $daftarKategori = Buku::whereNotNull('kategori')
+                          ->distinct()
+                          ->pluck('kategori');
+
+    return view('anggota.dashboard', compact('all_books', 'daftarKategori'));
+}
     public function anggota()
     {
         $user = Auth::user();
